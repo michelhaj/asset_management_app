@@ -1,0 +1,336 @@
+{% extends 'base.html' %}
+
+{% block title %}Inventory management system{% endblock %}
+
+{% load static %}
+
+{% block content %}
+
+<div class="main-container">
+  <div class="card">
+    <div class="card-body">
+<div class="scanner-container">
+  <h1 class="border-b-4 pb-2 border-orange-500 text-center font-bold text-2xl">Docking Station Barcode Scanner</h1>
+  
+  <div id="interactive" class="viewport">
+    <video autoplay="true" preload="auto" src="" muted="true" playsinline="true"></video>
+    <canvas class="drawingBuffer"></canvas>
+  </div>
+  <audio id="beep" style="display:none;">
+    <source src="{% static '/beep.mp3' %}" type="audio/mpeg">
+  </audio>
+  <div id="btns">
+    <button onclick="startScanning()">Start Scanning</button>
+    <button onclick="stopScanning()">Stop Scanning</button>
+  </div>
+</div>
+</div>
+</div>
+</div>
+<style>
+  .card {
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+    transition: 0.3s;
+    border-radius: 5px;
+    width:600px;
+    margin-top:40px;
+    padding: 20px;
+    background-color: #f5f5f5;
+  }
+  
+  .card:hover {
+    box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2);
+  }
+  
+  .card-body {
+    padding: 0;
+  }
+
+
+  h1, h2, h3, h4 {
+    font-family: "Cabin Condensed", sans-serif;
+  }
+
+  button {
+    background-color: #333;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    margin-right: 10px;
+    transition: background-color 0.3s;
+  }
+
+  button:hover {
+    background-color: #555;
+  }
+  #btns{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top:5px;
+  }
+
+  .main-container {
+    display: flex;
+    flex-direction:column;
+    justify-content: center;
+    align-items: center;
+    min-height: 60vh;
+    margin: 0;
+    padding: 0;
+  }
+  #scanner-container{
+    display: flex;
+    flex-direction:column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  #interactive {
+    width: 480px;
+    height: 360px;
+    position: relative;
+    margin: auto;
+  }
+
+  #interactive video {
+    width: 100%;
+    height: 50%;
+    object-fit: cover;
+  }
+
+  #interactive canvas,
+  #interactive video.drawingBuffer {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 50%;
+    object-fit: cover;
+  }
+
+  .scanner-overlay {
+    display: none;
+    width: 480px;
+    height: 380px;
+    position: absolute;
+    padding: 20px;
+    top: 50%;
+    margin-top: -215px;
+    left: 50%;
+    margin-left: -250px;
+    background-color: #FFF;
+    -moz-box-shadow: #333333 0px 4px 10px;
+    -webkit-box-shadow: #333333 0px 4px 10px;
+    box-shadow: #333333 0px 4px 10px;
+  }
+
+  @media (max-width: 603px) {
+    h1{font-size:30px}
+    .card {
+      box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+      transition: 0.3s;
+      border-radius: 5px;
+      width: 350px;
+      margin-top:30px;
+      padding: 10px;
+      background-color: #f5f5f5;
+    }
+    
+    .card:hover {
+      box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2);
+    }
+    
+    .card-body {
+      padding: 0;}
+
+    #interactive {
+      width: 340px;
+      height: 180px;
+    }
+
+    #interactive video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    #interactive canvas,
+    #interactive video.drawingBuffer {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .scanner-overlay {
+      width: 340px;
+      height: 190px;
+      padding: 10px;
+      {% comment %} margin-top: -105px;
+      margin-left: -125px; {% endcomment %}
+    }
+  }
+</style>
+
+ 
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="{% static '/js/quagga.min.js' %}"></script>
+<script>
+  var beep = document.getElementById('beep');
+    function order_by_occurrence(arr) {
+      var counts = {};
+      arr.forEach(function(value){
+          if(!counts[value]) {
+              counts[value] = 0;
+          }
+          counts[value]++;
+      });
+    
+      return Object.keys(counts).sort(function(curKey,nextKey) {
+          return counts[curKey] < counts[nextKey];
+      });
+    }
+  function load_quagga(){
+    if ($('#interactive').length > 0 && navigator.mediaDevices && typeof navigator.mediaDevices.getUserMedia === 'function') {
+  
+      var last_result = [];
+      if (Quagga.initialized == undefined) {
+        Quagga.onDetected(function(result) {
+          var last_code = result.codeResult.code;
+          last_result.push(last_code);
+          if (last_result.length > 20) {
+            code = order_by_occurrence(last_result)[0];
+            last_result = [];
+            Quagga.stop();
+            saveBarcode(code);
+          }
+        });
+      }
+  
+      Quagga.init({
+        inputStream: {
+          name: "Live",
+          type: "LiveStream",
+          constraints: {
+            width: { min: 640, ideal: 1280, max: 1920 },
+      height: { min: 480, ideal: 720, max: 1080 },
+      facingMode: "environment",
+      aspectRatio: { min: 1, max: 2 }
+    
+          },
+        
+          target: document.querySelector('#interactive')
+        },
+        decoder: {
+          readers: ["ean_reader", "code_128_reader"]
+        },
+        locator: {
+          halfSample: true,
+          patchSize:'meduim',
+        },
+        
+        locate: false
+      }, function(err) {
+        if (err) {
+          console.log(err);
+          return;
+        }
+        console.log("Initialization finished. Ready to start");
+        Quagga.start();
+      });
+      
+  
+    }
+  }; 
+  function startScanning() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      alert('getUserMedia not supported in this browser.');
+      return;
+    };
+
+    load_quagga();
+  };
+  function stopScanning() {
+    Quagga.stop();
+  }
+
+
+  
+  Quagga.onProcessed(function(result) {
+    var drawingCtx = Quagga.canvas.ctx.overlay,
+      drawingCanvas = Quagga.canvas.dom.overlay;
+
+    if (result) {
+      if (result.boxes) {
+        drawingCtx.clearRect(0, 0, parseInt(drawingCanvas.getAttribute("width")), parseInt(drawingCanvas.getAttribute("height")));
+        result.boxes.filter(function(box) {
+          return box !== result.box;
+        }).forEach(function(box) {
+          Quagga.ImageDebug.drawPath(box, {
+            x: 0,
+            y: 1
+          }, drawingCtx, {
+            color: "green",
+            lineWidth: 2
+          });
+        });
+      }
+
+      if (result.box) {
+        Quagga.ImageDebug.drawPath(result.box, {
+          x: 0,
+          y: 1
+        }, drawingCtx, {
+          color: "#00F",
+          lineWidth: 2
+        });
+      }
+
+      if (result.codeResult && result.codeResult.code) {
+        Quagga.ImageDebug.drawPath(result.line, {
+          x: 'x',
+          y: 'y'
+        }, drawingCtx, {
+          color: 'red',
+          lineWidth: 3
+        });
+      }
+    }
+  });
+
+  function saveBarcode(barcode_data) {
+    $.ajax({
+      url: '{% url "save_barcode_dockingstation" %}',
+      timeout: 10000,
+  
+      method: 'POST',
+      data: {
+        barcode_data: barcode_data,
+        csrfmiddlewaretoken: '{{ csrf_token }}',
+      },
+      success: function (response) {
+        alert(barcode_data);
+        alert(response.message)
+        console.log('Saved barcode:', barcode_data);
+        if (response.new_item) {
+          window.location.href = '{% url "dockingstation_form" barcode=0 %}'.replace('0', barcode_data);
+        }
+        if (!response.new_item) {
+          window.location.href = '{% url "dockingstation_form" barcode=0 %}'.replace('0', barcode_data);
+        }
+      },
+      error: function (response) {
+        alert(barcode_data);
+        alert(response.message)
+        console.error('Error saving barcode:', barcode_data);
+      },
+    });
+  }
+</script>
+{% endblock %}

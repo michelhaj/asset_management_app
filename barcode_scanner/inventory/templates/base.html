@@ -1,0 +1,176 @@
+
+<!DOCTYPE html>
+
+<html lang="en"  class="min-h-screen">
+<head>
+  <meta charset="UTF-8">
+  {% load static %}
+  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% comment %} <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" integrity="sha512-wnea99uKIC3TJF7v4eKk4Y+lMz2Mklv18+r4na2Gn1abDRPPOeef95xTzdwGD9e6zXJBteMIhZ1+68QC5byJZw==" crossorigin="anonymous" referrerpolicy="no-referrer" > {% endcomment %}
+    {% comment %} <link href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css" rel="stylesheet"> {% endcomment %}
+
+  <link rel="stylesheet" href="{% static '/css/site.css' %}">
+  <script src="https://unpkg.com/@zxing/library@0.18.6/umd/index.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  {% comment %} <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script> {% endcomment %}
+  {% comment %} <script src="{% static '/js/quagga.min.js' %}">></script> {% endcomment %}
+  {% comment %} <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script> {% endcomment %}
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;800&display=swap"
+  rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+
+
+  {% block header %}{% endblock header%}
+
+
+  <title>{% block title %}{% endblock title%}</title>
+</head>
+<body>
+   {%include "notifications.html"%}
+<div class=" min-h-screen grid md:grid-cols-9">
+  <div class="bg-white md:col-span-2 md:flex md:justify-end">
+    <nav class="text-right mr-3" >
+      <div class="flex justify-between items-center">
+        <h1 class="ml-3 mt-3">
+          <a class=" text-sm md:text-xl hover:text-gray-800" href='{% url "home" %}'>Assets Management System</a>
+        </h1>
+        <div class="px-4 cursor-pointer md:hidden" id='burger'>
+          <svg class="w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+          </svg>
+          
+        </div>
+      </div>
+      <ul class="text-md lg:text-lg mt-20 hidden md:block" id="menu">
+        <div class="p-2.5 mt-2 flex items-center printer rounded-md px-4 duration-300 cursor-pointer  hover:bg-blue-600">
+          <i class="bi bi-grid"></i>
+          <div class="flex justify-between w-full items-center">
+            <a id="indexa" href="{% url "home" %}"><span class=" ml-4 ">Home</span></a>
+          </div>
+        </div>
+        
+        <div class="p-2.5 mt-2 flex items-center printer rounded-md px-4 duration-300 cursor-pointer  hover:bg-blue-600">
+          <i class="bi bi-laptop"></i>
+          <div class="flex justify-between w-full items-center">
+            <a id="indexa" href="{% url 'index' %}"><span class=" ml-4 ">Scan computer</span></a>
+            <span class="text-lg text-orange-500">
+              <i class="bi bi-upc-scan"></i>
+            </span>
+          </div>
+        </div>
+        <div class="p-2.5 mt-2 flex items-center printer rounded-md px-4 duration-300 cursor-pointer  hover:bg-blue-600">
+          <i class="bi bi-hdd-network"></i>
+          <div class="flex justify-between w-full items-center">
+            <a id="indexa" href="{% url 'scan_dockingstation' %}"><span class=" ml-4 ">Scan Docks</span></a>
+            <span class="text-lg text-orange-500">
+              <i class="bi bi-upc-scan"></i>
+            </span>
+          </div>
+        </div>
+        
+        <div class="p-2.5 mt-2 flex items-center printer rounded-md px-4 duration-300 cursor-pointer  hover:bg-blue-600">
+          <i class="bi bi-display"></i>
+          <div class="flex justify-between w-full items-center">
+            <a id="indexa" href="{% url 'scan_monitor' %}"><span class=" ml-4 ">Scan Monitor</span></a>
+            <span class="text-lg text-orange-500">
+              <i class="bi bi-upc-scan"></i>
+            </span>
+          </div>
+        </div>
+        <div class="p-2.5 mt-2 flex items-center printer rounded-md px-4 duration-300 cursor-pointer  hover:bg-blue-600">
+          <i class="bi bi-printer"></i>
+          <div class="flex justify-between w-full items-center">
+            <a id="indexa" href="{% url 'add_printer' %}"><span class=" ml-4 ">Add Printer</span></a>
+            <span class="text-lg text-orange-500 ">
+              <i class="bi bi-plus"></i>
+            </span>
+          </div>
+        </div>
+      <!-- new -->
+      <div class="p-2.5 mt-2 flex items-center rounded-md px-4 duration-300 cursor-pointer  hover:bg-blue-600">
+        <i class="bi bi-list-ul"></i>
+        <div class="flex justify-between w-full items-center" onclick="dropDown()">
+          <span class=" ml-4 ">Assets List</span>
+          <span class="text-lg rotate-180 text-orange-500" id="arrow">
+            <i class="bi bi-chevron-down"></i>
+          </span>
+        </div>
+      </div>
+      <div class=" leading-7 text-left text-sm font-semibold mt-2 w-4/5 mx-auto" id="submenu">
+        <ul>
+          <li class="py-1" id="complist">
+            <a id="complista" class="px-2 flex justify-end border-r-4 border-white" href='{% url "computer_list" %}'><span>Computers List</span>
+              <span class="text-sm lg:text-lg"><i class="bi bi-laptop w-5 ml-3"></i></span>
+          </a>
+          </li>
+          <li class="py-1" id="complist">
+            <a id="complista" class="px-2 flex justify-end border-r-4 border-white" href='{% url "printers_list" %}'><span>Printers List</span>
+              <span class="text-sm lg:text-lg"><i class="bi bi-printer w-5 ml-3"></i></span>
+          </a>
+          </li>
+        </li>
+        <li class="py-1" id="complist">
+          <a id="complista" class="px-2 flex justify-end border-r-4 border-white" href='{% url "monitors_list" %}'><span>Monitors List</span>
+          <svg class="w-5 ml-3"  xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25" />
+          </svg>
+        </a>
+        </li>
+        <li class="py-1" id="complist">
+          <a id="complista" class="px-2 flex justify-end border-r-4 border-white" href='{% url "dockingstation_list" %}'><span>Docking Station List</span>
+            <span class="text-sm lg:text-lg"><i class="bi bi-hdd-network w-5 ml-3"></i></span>
+        </a>
+        </li>
+        </ul>
+      </div>
+      <!-- end new -->
+  
+      </ul>
+    </nav>
+  </div>
+
+  <main class="min-h-screen bg-gray-100 md:col-span-7">
+    <div class="flex  mt-3 mr-10 justify-center md:justify-end ">
+      <a href="/admin/" class="rounded-full py-2 px-3 uppercase text-orange-500 text-xs font-bold cursor-pointer tracking-wider
+       border-orange-500 border-2 hover:bg-orange-500 hover:text-white transition ease-out duration-500"><span>Admin</a>
+      <a href="{% url 'logout' %}" class=" rounded-full py-2 px-3 text-orange-500 uppercase text-xs font-bold cursor-pointer
+       tracking-wider ml-3 border-orange-500 border-2 hover:bg-orange-500 hover:text-white transition ease-out duration-500">Logout</a>
+    </div>
+    <div class="flex m-5">
+    <div class="flex flex-row justify-between bg-white rounded-lg shadow-md w-full  p-3 overflow-hidden w-52 lg:w-full">
+    
+    <h2 class="text-center px-2
+    pb-5">Database Support</h2>
+    <a href="#" class="bg-blue-500
+    text-white p-3 text-center
+    hover:bg-blue-800 transition-all
+    duration-500 text-sm rounded-lg">Add Asset</a>
+    </div>
+  </div>
+   
+
+
+      <div>
+        <!-- cards go here -->
+        <div class="ml-5 mr-10">
+          {% block content %}
+          {% endblock content %}
+      </div>
+    </main>
+  </div>
+  <script src="{% static '/js/burger.js' %}"></script>
+  <script src="{% static '/js/preline.js' %}"></script>
+  <script> function dropDown() {
+    document.querySelector('#submenu').classList.toggle('hidden')
+    document.querySelector('#arrow').classList.toggle('rotate-180')
+  }
+  dropDown()</script>
+
+      </body>
+ 
+  
+
+</html>
+
+

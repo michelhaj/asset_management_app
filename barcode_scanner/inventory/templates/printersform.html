@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{%load widget_tweaks%}
+{% block content %}
+<div>
+<div class="grid grid-cols-1 gap-3 md:grid-cols-3">
+  
+    <div class="bg-gray-200 rounded-lg col-span-2">
+      <h2 class="m-5 pt-5 font-bold text-xl">Printer Details</h2>
+
+      <form class="m-5" method="post" action="{{ url }}">
+        {% csrf_token %}
+
+        <div class="grid grid-cols-1 md:grid-cols-2">
+          {% for item in form %}
+
+          <div class="flex-col justify-center font-semibold">
+            <div>{%render_field item.label %}</div>
+
+            <div>{%render_field item class+="form-input border-orange-500 border-2"%}</div>
+          </div>
+          {%endfor%}
+        </div>
+        <div class="flex gap-4">
+
+        <div class="mt-10 pb-10"><span class="orang-btn"><button type="submit"> Save </button></span></div>
+        <div class="pb-10 sm:mt-10"><a href="{% url 'delete_printer' printers.id %}"><span class="orang-btn" ><button> delete </button></span></a></div>
+
+        </div>
+      </form>
+    </div>
+
+    <div class="  bg-gray-200 rounded-lg col-span-1">
+      <h2 class="m-5 pt-5 font-bold text-xl">Computers Details</h2>
+      <div class="m-5 grid grid-cols-1 md:grid-cols-2">
+        {% if printers.Computers.all %}
+        {% for computer in printers.Computers.all %}
+        <a href="{% url 'computers_form' computer.id %}"><button
+            class="border-2 text-xxs px-3 py-1 bg-yellow-400 rounded-md">{{ computer }} </button></a>
+        {% endfor %}
+        {% else %}
+        No Computers found for this printer.
+        {% endif %}
+      </div>
+    </div>
+</div>
+</div>
+
+  {% endblock %}

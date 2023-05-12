@@ -1,0 +1,154 @@
+
+
+
+
+{% comment %} 
+{% extends 'base.html' %}
+
+{% block content %}
+  <h2>Scan Inventory</h2>
+  <video id="video" width="300" height="200"></video>
+  <canvas id="canvas" width="300" height="200"></canvas>
+  <button id="start">Start</button>
+  <button id="stop" style="display:none;">Stop</button>
+  <form id="item-form" method="post" enctype="multipart/form-data" style="display:none;">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Add Inventory Item</button>
+  </form>
+  <script>
+const video = document.getElementById('video');
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const startButton = document.getElementById('start');
+const stopButton = document.getElementById('stop');
+const itemForm = document.getElementById('item-form');
+const barcodeInput = document.getElementById('id_barcode');
+
+let barcodeDetector;
+let track;
+
+if (!("BarcodeDetector" in window)) {
+  console.log("Barcode Detector is not supported by this browser.");
+} else {
+  barcodeDetector = new BarcodeDetector();
+}
+
+startButton.addEventListener('click', async () => {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+    track = stream.getTracks()[0];
+    video.srcObject = stream;
+    video.play();
+    startButton.style.display = 'none';
+    stopButton.style.display = 'inline';
+    requestAnimationFrame(scanBarcode);
+  } catch (err) {
+    console.error(err);
+  }
+});
+
+stopButton.addEventListener('click', () => {
+  track.stop();
+  video.srcObject = null;
+  startButton.style.display = 'inline';
+  stopButton.style.display = 'none';
+});
+
+// ... other code
+
+async function scanBarcode() {
+    if (!video.srcObject) return;
+  
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    try {
+      const barcodes = await barcodeDetector.detect(canvas);
+      if (barcodes.length > 0) {
+        const barcode = barcodes[0].rawValue;
+        const response = await fetch('/scan/process_barcode/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': document.getElementsByName('csrfmiddlewaretoken')[0].value,
+          },
+          body: `barcode=\${encodeURIComponent(barcode)}`,
+        });
+  
+        const data = await response.json();
+        if (data.status === 'created') {
+          barcodeInput.value = barcode;
+          itemForm.style.display = 'block';
+          stopButton.click();
+        } else if (data.status === 'exists') {
+          // Handle the case when the barcode already exists in the database
+        }
+      } else {
+        requestAnimationFrame(scanBarcode);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+  
+
+  </script>
+{% endblock %} {% endcomment %}
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Barcode Scanner</title>
+    <style>
+        video {
+            width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Barcode Scanner</h1>
+    <video id="camera" playsinline></video>
+    <form method="POST" action="{% url 'process_barcode' %}">
+        {% csrf_token %}
+        <input type="hidden" name="barcode" id="barcode">
+        <input type="submit" value="Submit">
+    </form>
+    <script>
+        const video = document.getElementById('camera');
+        const barcodeInput = document.getElementById('barcode');
+
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+            .then(stream => {
+                video.srcObject = stream;
+                video.play();
+            })
+            .catch(err => {
+                console.log(err);
+            });
+
+        video.addEventListener('loadedmetadata', () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const context = canvas.getContext('2d');
+
+            setInterval(() => {
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+                const barcodeDetector = new BarcodeDetector();
+                barcodeDetector.detect(imageData)
+                    .then(barcodes => {
+                        if (barcodes.length > 0) {
+                            barcodeInput.value = barcodes[0].rawValue;
+                        }
+                    })
+                    .catch(err => {
+                        console.log(err);
+                    });
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

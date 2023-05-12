@@ -1,0 +1,1341 @@
+{% extends 'base.html' %}
+
+{% block title %}Inventory management system{% endblock %}
+
+{% load static %}
+
+{% block content %}
+
+<div class="main-container">
+  <div class="card">
+    <div class="card-body">
+<div class="scanner-container">
+  <h1 class="border-b-4 pb-2 border-orange-500 text-center font-bold text-2xl" >Computer Barcode Scanner</h1>
+  
+  <div id="interactive" class="viewport">
+    <video autoplay="true" preload="auto" src="" muted="true" playsinline="true"></video>
+    <canvas class="drawingBuffer"></canvas>
+  </div>
+  <audio id="beep" style="display:none;">
+    <source src="{% static '/beep.mp3' %}" type="audio/mpeg">
+  </audio>
+  <div id="btns">
+    <button onclick="startScanning()">Start Scanning</button>
+    <button onclick="stopScanning()">Stop Scanning</button>
+  </div>
+</div>
+</div>
+</div>
+</div>
+<style>
+  .card {
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+    transition: 0.3s;
+    border-radius: 5px;
+    width:600px;
+    margin-top:40px;
+    padding: 20px;
+    background-color: #f5f5f5;
+  }
+  
+  .card:hover {
+    box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2);
+  }
+  
+  .card-body {
+    padding: 0;
+  }
+
+
+  h1, h2, h3, h4 {
+    font-family: "Cabin Condensed", sans-serif;
+  }
+
+  button {
+    background-color: #333;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    margin-right: 10px;
+    transition: background-color 0.3s;
+  }
+
+  button:hover {
+    background-color: #555;
+  }
+  #btns{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top:5px;
+  }
+
+  .main-container {
+    display: flex;
+    flex-direction:column;
+    justify-content: center;
+    align-items: center;
+    min-height: 60vh;
+    margin: 0;
+    padding: 0;
+  }
+  #scanner-container{
+    display: flex;
+    flex-direction:column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  #interactive {
+    width: 480px;
+    height: 360px;
+    position: relative;
+    margin: auto;
+  }
+
+  #interactive video {
+    width: 100%;
+    height: 50%;
+    object-fit: cover;
+  }
+
+  #interactive canvas,
+  #interactive video.drawingBuffer {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 50%;
+    object-fit: cover;
+  }
+
+  .scanner-overlay {
+    display: none;
+    width: 480px;
+    height: 380px;
+    position: absolute;
+    padding: 20px;
+    top: 50%;
+    margin-top: -215px;
+    left: 50%;
+    margin-left: -250px;
+    background-color: #FFF;
+    -moz-box-shadow: #333333 0px 4px 10px;
+    -webkit-box-shadow: #333333 0px 4px 10px;
+    box-shadow: #333333 0px 4px 10px;
+  }
+
+  @media (max-width: 603px) {
+    h1{font-size:30px}
+    .card {
+      box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+      transition: 0.3s;
+      border-radius: 5px;
+      width: 350px;
+      margin-top:30px;
+      padding: 10px;
+      background-color: #f5f5f5;
+    }
+    
+    .card:hover {
+      box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2);
+    }
+    
+    .card-body {
+      padding: 0;}
+
+    #interactive {
+      width: 340px;
+      height: 180px;
+    }
+
+    #interactive video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    #interactive canvas,
+    #interactive video.drawingBuffer {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .scanner-overlay {
+      width: 340px;
+      height: 190px;
+      padding: 10px;
+      {% comment %} margin-top: -105px;
+      margin-left: -125px; {% endcomment %}
+    }
+  }
+</style>
+
+ 
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="{% static '/js/quagga.min.js' %}"></script>
+<script>
+  var beep = document.getElementById('beep');
+    function order_by_occurrence(arr) {
+      var counts = {};
+      arr.forEach(function(value){
+          if(!counts[value]) {
+              counts[value] = 0;
+          }
+          counts[value]++;
+      });
+    
+      return Object.keys(counts).sort(function(curKey,nextKey) {
+          return counts[curKey] < counts[nextKey];
+      });
+    }
+  function load_quagga(){
+    if ($('#interactive').length > 0 && navigator.mediaDevices && typeof navigator.mediaDevices.getUserMedia === 'function') {
+  
+      var last_result = [];
+      if (Quagga.initialized == undefined) {
+        Quagga.onDetected(function(result) {
+          var last_code = result.codeResult.code;
+          last_result.push(last_code);
+          if (last_result.length > 20) {
+            code = order_by_occurrence(last_result)[0];
+            last_result = [];
+            Quagga.stop();
+            saveBarcode(code);
+          }
+        });
+      }
+  
+      Quagga.init({
+        inputStream: {
+          name: "Live",
+          type: "LiveStream",
+          constraints: {
+            width: { min: 640, ideal: 1280, max: 1920 },
+      height: { min: 480, ideal: 720, max: 1080 },
+      facingMode: "environment",
+      aspectRatio: { min: 1, max: 2 }
+    
+          },
+        
+          target: document.querySelector('#interactive')
+        },
+        decoder: {
+          readers: ["ean_reader", "code_128_reader"]
+        },
+        locator: {
+          halfSample: true,
+          patchSize:'meduim',
+        },
+        
+        locate: false
+      }, function(err) {
+        if (err) {
+          console.log(err);
+          return;
+        }
+        console.log("Initialization finished. Ready to start");
+        Quagga.start();
+      });
+      
+  
+    }
+  }; 
+  function startScanning() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      alert('getUserMedia not supported in this browser.');
+      return;
+    };
+
+    load_quagga();
+  };
+  function stopScanning() {
+    Quagga.stop();
+  }
+
+
+  
+  Quagga.onProcessed(function(result) {
+    var drawingCtx = Quagga.canvas.ctx.overlay,
+      drawingCanvas = Quagga.canvas.dom.overlay;
+
+    if (result) {
+      if (result.boxes) {
+        drawingCtx.clearRect(0, 0, parseInt(drawingCanvas.getAttribute("width")), parseInt(drawingCanvas.getAttribute("height")));
+        result.boxes.filter(function(box) {
+          return box !== result.box;
+        }).forEach(function(box) {
+          Quagga.ImageDebug.drawPath(box, {
+            x: 0,
+            y: 1
+          }, drawingCtx, {
+            color: "green",
+            lineWidth: 2
+          });
+        });
+      }
+
+      if (result.box) {
+        Quagga.ImageDebug.drawPath(result.box, {
+          x: 0,
+          y: 1
+        }, drawingCtx, {
+          color: "#00F",
+          lineWidth: 2
+        });
+      }
+
+      if (result.codeResult && result.codeResult.code) {
+        Quagga.ImageDebug.drawPath(result.line, {
+          x: 'x',
+          y: 'y'
+        }, drawingCtx, {
+          color: 'red',
+          lineWidth: 3
+        });
+      }
+    }
+  });
+
+  function saveBarcode(barcode_data) {
+    $.ajax({
+      url: '{% url "save_barcode" %}',
+      timeout: 10000,
+  
+      method: 'POST',
+      data: {
+        barcode_data: barcode_data,
+        csrfmiddlewaretoken: '{{ csrf_token }}',
+      },
+      success: function (response) {
+        alert(barcode_data);
+        alert(response.message)
+        console.log('Saved barcode:', barcode_data);
+        if (response.new_item) {
+          window.location.href = '{% url "computer_form" barcode=0 %}'.replace('0', barcode_data);
+        }
+        if (!response.new_item) {
+          window.location.href = '{% url "computer_form" barcode=0 %}'.replace('0', barcode_data);
+        }
+      },
+      error: function (response) {
+        alert(barcode_data);
+        alert(response.message)
+        console.error('Error saving barcode:', barcode_data);
+      },
+    });
+  }
+</script>
+{% endblock %}
+
+
+{% comment %} {% extends 'base.html' %}
+
+{% block title %}Inventory management system{% endblock %}
+
+{% load static %}
+
+{% block content %}
+<div class="scanner-container">
+  <h1>Computer Barcode Scanner</h1>
+  <div id="interactive" class="viewport">
+    <video autoplay="true" preload="auto" src="" muted="true" playsinline="true"></video>
+    <canvas class="drawingBuffer" width="640" height="480"></canvas>
+  </div>
+  <audio id="beep" style="display:none;">
+    <source src="{% static '/beep.mp3' %}" type="audio/mpeg">
+  </audio>
+  <div>
+    <button onclick="startScanning()">Start Scanning</button>
+    <button onclick="stopScanning()">Stop Scanning</button>
+  </div>
+  
+</div>
+<style>
+  body {
+    background-color: #F0F0F0;
+    margin: 0px;
+    font-family: Ubuntu, sans-serif;
+    color: #1e1e1e;
+    font-weight: normal;
+    padding-top: 0;
+  }
+  
+  h1, h2, h3, h4 {
+    font-family: "Cabin Condensed", sans-serif;
+  }
+
+  #interactive.viewport {
+    width: 640px;
+    height: 480px;
+  }
+  
+  
+  #interactive.viewport canvas, video {
+    float: left;
+    width: 640px;
+    height: 480px;
+  }
+  
+  #interactive.viewport canvas.drawingBuffer, video.drawingBuffer {
+    margin-left: -640px;
+  }
+  
+  .scanner-overlay {
+    display: none;
+    width: 640px;
+    height: 510px;
+    position: absolute;
+    padding: 20px;
+    top: 50%;
+    margin-top: -275px;
+    left: 50%;
+    margin-left: -340px;
+    background-color: #FFF;
+    -moz-box-shadow: #333333 0px 4px 10px;
+    -webkit-box-shadow: #333333 0px 4px 10px;
+    box-shadow: #333333 0px 4px 10px;
+  }
+  
+  
+  i.icon-24-scan {
+    width: 24px;
+    height: 24px;
+    background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyJpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMy1jMDExIDY2LjE0NTY2MSwgMjAxMi8wMi8wNi0xNDo1NjoyNyAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENTNiAoV2luZG93cykiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6QzFFMjMzNTBFNjcwMTFFMkIzMERGOUMzMzEzM0E1QUMiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6QzFFMjMzNTFFNjcwMTFFMkIzMERGOUMzMzEzM0E1QUMiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDpDMUUyMzM0RUU2NzAxMUUyQjMwREY5QzMzMTMzQTVBQyIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDpDMUUyMzM0RkU2NzAxMUUyQjMwREY5QzMzMTMzQTVBQyIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/PtQr90wAAAUuSURBVHjanFVLbFRVGP7ua97T9DGPthbamAYYBNSMVbBpjCliWWGIEBMWsnDJxkh8RDeEDW5MDGticMmGBWnSlRSCwgLFNkqmmrRIqzjTznTazkxn5s7c6/efzm0G0Jhwkj/nP+d/nv91tIWFBTQaDQWapkGW67p4ltUub5qmAi0UCqF/a/U2m81tpmddotwwDGSz2dzi4uKSaOucnJycGhsbe1XXdQiIIcdxEAgEtgXq9brySHCht79UXi/8QheawN27d385fPjwuEl6XyKR6LdtW7t06RLK5TKOHj2K/fv3Q87Dw8OYn5/HiRMnMDs7i5mZGQwODiqlPp8PuVwO6XRaOXb16lXl1OnTp5FMJvtosF8M+MWLarWqGJaWlpBKpRRcu3YN4+PjmJ6exsTEhDJw5coVjI6OKgPhcBiZTAbxeBx+vx+XL19Gd3c3Tp48Ka9zqDYgBlTQxYNgMIhIJKLCILkQb+TZsgvdsiyFi+feWRR7oRNZyanQtvW2V4DEUUBiK2eJpeDirSyhCe7F2QPh8fiEp72i9PbsC5G52DbiKZA771yr1dTuGfJ4PQNPFoAyQNR1aNEmsS5eyB3PgjeooMZd2AWvNmzYci/Gea7TeFOcI93jV/K67noGmi4vdRI9gPSDeMLSdKUBZZczlWm1rTtHjLZ24d+WER2tc8N1m+Y+ID74wx0zGYvhg9UNrJdtHJyZRdQfwPsrq9g99xsGlgsYmr6BNzO/IVwsYfjBQ6XYz6JI/72MV366B5/lw0elOkJWGUM3bmKtWjXSLuLaBWhnPnnp0FfoiFi4+TMfVAb2poBkDLjO845uYLEAjL4ALGWBP5YAOsP4AJYBFDaB1HOSVWD2PuV95H2RdV93Lv74/cf6p6Zxq/h6OofeOPJBC39JtONdwOAAViOs4p4OFGTf0Uc8iiyrr9YdQrUnDLsngrVOC0jQib44HlF2RafRZBz1Qy+vfhgK3NJZBlrm+LEm9qWwzFgLU7Ozg0JxZP06jQSRpQ7EerAWDSt6PuhHPmChEAog56fCLvJT5hHTm3OZkz3DyLx7XNWTGEA1GkV14gjWgwbW0ESVjYRwCOuai03L5E7OUBAV4kXSS4auoGIaKOma4m8EA5R1sMEGLh95C+XuLph0WJWpxepYYLtfT0RRgY1KgNODY6BoaChRuEhDCIZQYseuki5KN6hcQHiq7OZNv4/Zq2O6P4Lfkwn46vZjjaYZrIpvWbpzjLErrc4xUGE4avRedpYJalRcIl5hQius/SrPm9xrNOQYJhao6BvNUeWqtY8KaWuNjHOFAr7mM9f4NA4UbKysoUJ8PV9UzVOx6wxDDWUOxnK1pmCD07fOMAvtIsM3l89Dl3HRGhVma9AZMqjOnz2LQqWCxs6dqr3T7x1DTzKJaG8SekcHhg4cgI/56uKdlKnBV/WndqN3YAB/7tyBd3oT6GBIOzs7kc/nDfFdDFT5bS73cp06dQoaPa/Rw/rtO/resTHxxE2m9rCrbSR27UJCcMf1BpiA5rAAGgdfc868fUR1sMwj0cm9Iu9IctweisViB3hhKTHDcHc5jv/LspbyaZrR1OD82/fIlOkuB9LnEWRmDX2TsddUPg3D5gvuc0je0rZaD5EW6G3yjS+A3eeBEWq3XW/Abw1HhUspXADufQb86oW7tZytkYCN//3hHwBvDALPi8EnSOYK8DAOfCc2h4aGcO7cuafkzampqf9UripH12/DtOZbx8ciVGzYy5OO40o25ascGRl5Ssc/AgwAjW3JwqIUjSYAAAAASUVORK5CYII=");
+    display: inline-block;
+    background-repeat: no-repeat;
+    line-height: 24px;
+    margin-top: 1px;
+    vertical-align: text-top;}
+
+  @media (max-width: 603px) {
+  
+   
+    #interactive.viewport {
+      width: 300px;
+      height: 300px;
+      overflow: hidden;
+    }
+  
+  
+    #interactive.viewport canvas, video {
+      margin-top: -50px;
+      width: 300px;
+      height: 400px;
+    }
+  
+    #interactive.viewport canvas.drawingBuffer, video.drawingBuffer {
+      margin-left: -300px;
+    }
+  
+  
+    
+  }
+  @media (max-width: 603px) {
+  
+    .overlay.scanner {
+      width: 640px;
+      height: 510px;
+      padding: 20px;
+      margin-top: -275px;
+      margin-left: -340px;
+      background-color: #FFF;
+      -moz-box-shadow: none;
+      -webkit-box-shadow: none;
+      box-shadow: none;
+    }
+  
+ 
+  }
+</style>
+ 
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="{% static '/js/quagga.min.js' %}"></script>
+<script>
+  
+    var beep = document.getElementById('beep');
+    function order_by_occurrence(arr) {
+      var counts = {};
+      arr.forEach(function(value){
+          if(!counts[value]) {
+              counts[value] = 0;
+          }
+          counts[value]++;
+      });
+    
+      return Object.keys(counts).sort(function(curKey,nextKey) {
+          return counts[curKey] < counts[nextKey];
+      });
+    }
+    
+    var App = {
+   
+
+
+      lastResult : null,
+      last_result: [],
+      init: function() {
+        
+          var self = this;
+
+          Quagga.init(this.state, function(err) {
+              if (err) {
+                  return self.handleError(err);
+              }
+              //Quagga.registerResultCollector(resultCollector);
+              Quagga.start();
+          });
+      },
+      handleError: function(err) {
+          console.log(err);
+      },
+    
+      inputMapper: {
+          inputStream: {
+              constraints: function(value){
+                  if (/^(\d+)x(\d+)$/.test(value)) {
+                      var values = value.split('x');
+                      return {
+                          width: {min: parseInt(values[0])},
+                          height: {min: parseInt(values[1])}
+                      };
+                  }
+                  return {
+                      deviceId: value
+                  };
+              }
+          },
+          numOfWorkers: function(value) {
+              return parseInt(value);
+          },
+
+      },
+      state: {
+          inputStream: {
+              type : "LiveStream",
+              constraints: {
+                  width: {min: 640},
+                  height: {min: 480},
+                  facingMode: "environment",
+                  aspectRatio: {min: 1, max: 2}
+              }
+          },
+          locator: {
+              patchSize: "medium",
+              halfSample: true
+          },
+          numOfWorkers: 2,
+          frequency: 10,
+          decoder: {
+            readers : [
+    'code_128_reader' ,
+    {
+      format: "ean_reader",
+      config: {
+          supplements: [
+              'ean_13_reader','ean_5_reader', 'ean_2_reader','ean_8_reader'
+          ]
+      }
+  },
+    
+    
+    'code_39_reader',
+    'code_39_vin_reader',
+    'codabar_reader',
+    'upc_reader',
+    'upc_e_reader',
+    'i2of5_reader',
+    '2of5_reader',
+    'code_93_reader'
+]
+              
+        },
+             
+          locate: true
+      },
+      lastResult : null
+    };
+
+  
+    
+       
+
+        Quagga.onProcessed(function(result) {
+            var drawingCtx = Quagga.canvas.ctx.overlay,
+              drawingCanvas = Quagga.canvas.dom.overlay;
+        
+            if (result) {
+              if (result.boxes) {
+                drawingCtx.clearRect(0, 0, parseInt(drawingCanvas.getAttribute("width")), parseInt(drawingCanvas.getAttribute("height")));
+                result.boxes.filter(function(box) {
+                  return box !== result.box;
+                }).forEach(function(box) {
+                  Quagga.ImageDebug.drawPath(box, {
+                    x: 0,
+                    y: 1
+                  }, drawingCtx, {
+                    color: "green",
+                    lineWidth: 2
+                  });
+                });
+              }
+        
+              if (result.box) {
+                Quagga.ImageDebug.drawPath(result.box, {
+                  x: 0,
+                  y: 1
+                }, drawingCtx, {
+                  color: "#00F",
+                  lineWidth: 2
+                });
+              }
+        
+              if (result.codeResult && result.codeResult.code) {
+                Quagga.ImageDebug.drawPath(result.line, {
+                  x: 'x',
+                  y: 'y'
+                }, drawingCtx, {
+                  color: 'red',
+                  lineWidth: 3
+                });
+              }
+            }
+          });
+    
+  Quagga.onDetected(function(result) {
+  var code = result.codeResult.code;
+  App.last_result.push(code);
+  if (App.last_result.length > 20) {
+    code = order_by_occurrence(App.last_result)[0];
+    App.last_result = [];
+    beep.play()
+    Quagga.stop();
+    saveBarcode(code);
+  }
+
+})
+
+
+  
+    
+    
+    function startScanning() {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        alert('getUserMedia not supported in this browser.');
+        return;
+      };
+  
+      App.init();
+    };
+    function stopScanning() {
+      Quagga.stop();
+    };
+  
+    function saveBarcode(barcode_data) {
+      $.ajax({
+        url: '{% url "save_barcode" %}',
+        timeout: 10000,
+    
+        method: 'POST',
+        data: {
+          barcode_data: barcode_data,
+          csrfmiddlewaretoken: '{{ csrf_token }}',
+        },
+        success: function (response) {
+          alert(barcode_data);
+          alert(response.message)
+          console.log('Saved barcode:', barcode_data);
+          if (response.new_item) {
+            window.location.href = '{% url "computer_form" barcode=0 %}'.replace('0', barcode_data);
+          }
+          if (!response.new_item) {
+            window.location.href = '{% url "computer_form" barcode=0 %}'.replace('0', barcode_data);
+          }
+        },
+        error: function (response) {
+          alert(barcode_data);
+          alert(response.message)
+          console.error('Error saving barcode:', barcode_data);
+        },
+      });
+      
+    }
+  
+  </script>
+  {% endblock %}
+
+
+
+
+ {% endcomment %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{% comment %} {% extends 'base.html' %}
+
+{% block title %}Inventory management system{% endblock %}
+
+{% load static %}
+
+{% block content %}
+<div class="scanner-container">
+  <h1>Computer Barcode Scanner</h1>
+  <div id='barcode-scanner'></div>
+  <audio id="beep" style="display:none;">
+    <source src="{% static '/beep.mp3' %}" type="audio/mpeg">
+  </audio>
+  <div>
+    <button onclick="startScanning()">Start Scanning</button>
+    <button onclick="stopScanning()">Stop Scanning</button>
+  </div>
+  
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="{% static '/js/quagga.min.js' %}"></script>
+<script>
+  var beep = document.getElementById('beep');
+  function order_by_occurrence(arr) {
+    var counts = {};
+    arr.forEach(function(value){
+        if(!counts[value]) {
+            counts[value] = 0;
+        }
+        counts[value]++;
+    });
+  
+    return Object.keys(counts).sort(function(curKey,nextKey) {
+        return counts[curKey] < counts[nextKey];
+    });
+  }
+  
+   function load_quagga(){
+    if ($('#barcode-scanner').length > 0 && navigator.mediaDevices && typeof navigator.mediaDevices.getUserMedia === 'function') {
+  
+      var last_result = [];
+      if (Quagga.initialized == undefined) {
+        Quagga.onDetected(function(result) {
+          var last_code = result.codeResult.code;
+          last_result.push(last_code);
+          if (last_result.length > 20) {
+            code = order_by_occurrence(last_result)[0];
+            last_result = [];
+            beep.play();
+            Quagga.stop();
+            saveBarcode(code);
+          }
+        });
+      }
+  
+      Quagga.init({
+        inputStream : {
+          name : "Live",
+          type : "LiveStream",
+          numOfWorkers: navigator.hardwareConcurrency,
+          target: document.querySelector('#barcode-scanner')  
+        },
+        decoder: {
+           readers:['code_128_reader']
+        }, 
+
+       
+      },
+      function(err) {
+          if (err) { console.log(err); return }
+          Quagga.initialized = true;
+          Quagga.start();
+      });
+
+  
+    }
+  }; 
+
+  
+  
+  function startScanning() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      alert('getUserMedia not supported in this browser.');
+      return;
+    };
+
+    load_quagga();
+  };
+  function stopScanning() {
+    Quagga.stop();
+  }
+
+  function saveBarcode(barcode_data) {
+    $.ajax({
+      url: '{% url "save_barcode" %}',
+      timeout: 10000,
+  
+      method: 'POST',
+      data: {
+        barcode_data: barcode_data,
+        csrfmiddlewaretoken: '{{ csrf_token }}',
+      },
+      success: function (response) {
+        alert(barcode_data);
+        alert(response.message)
+        console.log('Saved barcode:', barcode_data);
+        if (response.new_item) {
+          window.location.href = '{% url "computer_form" barcode=0 %}'.replace('0', barcode_data);
+        }
+        if (!response.new_item) {
+          window.location.href = '{% url "computer_form" barcode=0 %}'.replace('0', barcode_data);
+        }
+      },
+      error: function (response) {
+        alert(barcode_data);
+        alert(response.message)
+        console.error('Error saving barcode:', barcode_data);
+      },
+    });
+  }
+</script>
+{% endblock %} {% endcomment %}
+
+
+{% comment %} 
+{% extends 'base.html' %}
+
+{% block title %}Inventory management system{% endblock %}
+
+{% load static %}
+
+{% block content %}
+<div class="scanner-container">
+  <h1>Computer Barcode Scanner</h1>
+  <div id='barcode-scanner'></div>
+  <div class="scan-line"></div>
+  <audio id="beep" style="display:none;">
+    <source src="{% static '/beep.mp3' %}" type="audio/mpeg">
+  </audio>
+  
+  <div>
+    <button onclick="startScanning()">Start Scanning</button>
+    <button onclick="stopScanning()">Stop Scanning</button>
+  </div>
+ 
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="{% static '/js/quagga.min.js' %}"></script>
+<script>
+  var beep = document.getElementById('beep');
+  function order_by_occurrence(arr) {
+    var counts = {};
+    arr.forEach(function(value){
+        if(!counts[value]) {
+            counts[value] = 0;
+        }
+        counts[value]++;
+    });
+  
+    return Object.keys(counts).sort(function(curKey,nextKey) {
+        return counts[curKey] < counts[nextKey];
+    });
+  }
+  toggleScanLineAnimation(false);
+  
+   function load_quagga(){
+    if ($('#barcode-scanner').length > 0 && navigator.mediaDevices && typeof navigator.mediaDevices.getUserMedia === 'function') {
+  
+      var last_result = [];
+      if (Quagga.initialized == undefined) {
+        Quagga.onDetected(function(result) {
+          var last_code = result.codeResult.code;
+          last_result.push(last_code);
+          if (last_result.length > 20) {
+            code = order_by_occurrence(last_result)[0];
+            last_result = [];
+            Quagga.stop();
+            toggleanimation(false)
+            beep.play();
+            saveBarcode(code);
+          }
+        });
+      }
+  
+      Quagga.init({
+        inputStream: {
+          name: "Live",
+          type: "LiveStream",
+          numOfWorkers: navigator.hardwareConcurrency,
+          target: document.querySelector("#barcode-scanner"),
+          constraints: {
+            width: { max: 1920 },
+            height: {  max: 1080 },
+            
+            
+          },
+          area: { // Define the scan area
+            top: "0%",
+            right: "0%",
+            left: "0%",
+            bottom: "0%",
+          },
+        },
+        locator: {
+          halfSample: true,
+          patchSize: "medium",
+          showCanvas: false,
+          showPatches: false,
+          debug: {
+            showBoundingBox: false, // Show the boundary box
+            showFrequency: false,
+            drawScanline: false,
+            showPattern: false,
+            showRemainingPatchSize: false,
+            showFoundPatches: false,
+            showSkeleton: false,
+            showLabels: false,
+            showPatchLabels: false,
+            showRemainingPatchLabels: false,
+            boxFromPatches: {
+              showTransformed: false,
+              showTransformedBox: false,
+              showBB: false,
+            },
+          },
+        },
+        decoder: {
+          readers: [
+            "code_128",
+          ],
+        },
+      },
+      function (err) {
+        if (err) {
+          console.log(err);
+          return;
+        }
+        Quagga.initialized = true;
+        Quagga.start();
+      });
+      
+    }
+  }; 
+  
+function toggleanimation(start){ if (start) {
+  $(".scan-line").removeClass("detected");
+  
+} else {
+  $(".scan-line").addClass("detected");
+};}
+
+  function toggleScanLineAnimation(start) {
+    if (start) {
+      $(".scan-line").removeClass("stopped");
+      
+    } else {
+      $(".scan-line").addClass("stopped");
+    }
+  }
+  
+  
+  function startScanning() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      alert('getUserMedia not supported in this browser.');
+      return;
+    };
+    toggleScanLineAnimation(true);
+    load_quagga();
+  };
+  function stopScanning() {
+    toggleScanLineAnimation(false);
+    Quagga.stop();
+  }
+
+  function saveBarcode(barcode_data) {
+    $.ajax({
+      url: '{% url "save_barcode" %}',
+      timeout: 10000,
+  
+      method: 'POST',
+      data: {
+        barcode_data: barcode_data,
+        csrfmiddlewaretoken: '{{ csrf_token }}',
+      },
+      success: function (response) {
+        alert(barcode_data);
+        alert(response.message)
+        console.log('Saved barcode:', barcode_data);
+        if (response.new_item) {
+          window.location.href = '{% url "computer_form" barcode=0 %}'.replace('0', barcode_data);
+        }
+        if (!response.new_item) {
+          window.location.href = '{% url "computer_form" barcode=0 %}'.replace('0', barcode_data);
+        }
+      },
+      error: function (response) {
+        alert(barcode_data);
+        alert(response.message)
+        console.error('Error saving barcode:', barcode_data);
+      },
+    });
+  }
+</script>
+{% endblock %} {% endcomment %}
+  
+{%comment%}
+
+{% extends 'base.html' %}
+
+{% block title %}Inventory management system{% endblock %}
+
+{% load static %}
+
+{% block content %}
+<div class="scanner-container">
+  <h1>Computer Barcode Scanner</h1>
+  <div id='barcode-scanner'></div>
+  <div>
+    <button onclick="startScanning()">Start Scanning</button>
+    <button onclick="stopScanning()">Stop Scanning</button>
+  </div>
+  
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="{% static '/js/quagga.min.js' %}"></script>
+<script>
+  function order_by_occurrence(arr) {
+    var counts = {};
+    arr.forEach(function(value){
+        if(!counts[value]) {
+            counts[value] = 0;
+        }
+        counts[value]++;
+    });
+  
+    return Object.keys(counts).sort(function(curKey,nextKey) {
+        return counts[curKey] < counts[nextKey];
+    });
+  }
+  
+   function load_quagga(){
+    if ($('#barcode-scanner').length > 0 && navigator.mediaDevices && typeof navigator.mediaDevices.getUserMedia === 'function') {
+  
+      var last_result = [];
+      if (Quagga.initialized == undefined) {
+        Quagga.onDetected(function(result) {
+          var last_code = result.codeResult.code;
+          last_result.push(last_code);
+          if (last_result.length > 20) {
+            code = order_by_occurrence(last_result)[0];
+            last_result = [];
+            Quagga.stop();
+            saveBarcode(code);
+          }
+        });
+      }
+  
+      Quagga.init({
+        inputStream : {
+          name : "Live",
+          type : "LiveStream",
+          numOfWorkers: navigator.hardwareConcurrency,
+          target: document.querySelector('#barcode-scanner')  ,
+          constrants:{width: { max: 1920 },
+          height: { max: 1080 },
+           
+
+          },
+        },
+        decoder: {
+            readers : ['ean_reader','ean_8_reader','code_39_reader','code_39_vin_reader','codabar_reader','upc_reader','upc_e_reader']
+           // readers:['code_128_reader']
+        }, 
+        
+       
+      },
+      function(err) {
+          if (err) { console.log(err); return }
+          Quagga.initialized = true;
+          Quagga.start();
+      });
+  
+    }
+  }; 
+  
+
+  
+  
+  function startScanning() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      alert('getUserMedia not supported in this browser.');
+      return;
+    };
+
+    load_quagga();
+  };
+  function stopScanning() {
+    Quagga.stop();
+  }
+
+  function saveBarcode(barcode_data) {
+    $.ajax({
+      url: '{% url "save_barcode" %}',
+      timeout: 10000,
+  
+      method: 'POST',
+      data: {
+        barcode_data: barcode_data,
+        csrfmiddlewaretoken: '{{ csrf_token }}',
+      },
+      success: function (response) {
+        alert(barcode_data);
+        alert(response.message)
+        console.log('Saved barcode:', barcode_data);
+        if (response.new_item) {
+          window.location.href = '{% url "computer_form" barcode=0 %}'.replace('0', barcode_data);
+        }
+        if (!response.new_item) {
+          window.location.href = '{% url "computer_form" barcode=0 %}'.replace('0', barcode_data);
+        }
+      },
+      error: function (response) {
+        alert(barcode_data);
+        alert(response.message)
+        console.error('Error saving barcode:', barcode_data);
+      },
+    });
+  }
+</script>
+{% endblock %}
+
+{%endcomment}
+
+
+
+{% comment %} 
+{% extends 'base.html' %}
+
+ {%block title %}Inventory managment system{%endblock title%}
+
+
+{%block content%}
+   
+<div class="scanner-container">
+  <h1>Computer Barcode Scanner</h1>
+  <video id="video"></video>
+  <div>
+    <button onclick="startScanning()">Start Scanning</button>
+    <button onclick="stopScanning()">Stop Scanning</button>
+  </div>
+</div>
+
+    <script>
+     
+      
+      let video = document.getElementById('video');
+
+      let codeReader = new ZXing.BrowserMultiFormatReader();
+
+      function startScanning() {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          alert('getUserMedia not supported in this browser.');
+          return;
+        }
+
+        codeReader.decodeFromVideoDevice(null, video, (result, error) => {
+          if (result) {
+            // Successfully scanned barcode
+            console.log(result.text);
+            saveBarcode(result.text);
+            // Stop scanning after a successful scan
+            codeReader.reset();
+          }
+          if (error && !(error instanceof ZXing.NotFoundException)) {
+            console.error(error);
+          }
+        });
+      };
+
+      function stopScanning() {
+        codeReader.reset();
+      }
+
+      
+      function saveBarcode(barcode_data) {
+        $.ajax({
+          url: '{% url "save_barcode" %}',
+          timeout: 10000,
+      
+          method: 'POST',
+          data: {
+            barcode_data: barcode_data,
+            csrfmiddlewaretoken: '{{ csrf_token }}',
+          },
+          success: function (response) {
+            alert(barcode_data);
+            alert(response.message)
+            console.log('Saved barcode:', barcode_data);
+            if (response.new_item) {
+              window.location.href = '{% url "computer_form" barcode=0 %}'.replace('0', barcode_data);
+            }
+            if (!response.new_item) {
+              window.location.href = '{% url "computer_form" barcode=0 %}'.replace('0', barcode_data);
+            }
+          },
+          error: function (response) {
+            alert(barcode_data);
+            alert(response.message)
+            console.error('Error saving barcode:', barcode_data);
+          },
+        });
+      }
+      
+      
+    </script>
+  
+{%endblock content%}  
+ {% endcomment %}

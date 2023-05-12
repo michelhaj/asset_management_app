@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{%load widget_tweaks%}
+{% block content %}
+<div>
+<div class="bg-gray-200 rounded-lg m-5 w-full">
+  <h2 class="m-5 pt-5 font-bold text-xl"> Add Printer</h2>
+  
+  <form class="m-5" method="post">
+    {% csrf_token %}
+    
+    <div class="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3 ">
+    {% for item in form %}
+  
+    <div class="flex-col justify-center font-semibold">
+      <div>{%render_field item.label %}</div>
+      
+      <div>{%render_field item class+="form-input border-orange-500 border-2"%}</div>
+      </div>
+    {%endfor%}
+  </div>
+   <div class="mt-10 pb-10"><span class="orang-btn" ><button   type="submit"> Save </button></span></div>
+  </form>
+</div>
+</div>
+
+{% endblock %}
