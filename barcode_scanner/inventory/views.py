@@ -289,7 +289,7 @@ def dockingtation_form(request, barcode):
         form = monitorsForm(instance=dockingstaion)
 
    
-    return render(request, 'docking_stations_form.html', {'form': form, 'url': url,'dockingstation':dockingstation})
+    return render(request, 'docking_stations_form.html', {'form': form, 'url': url,'dockingstation':dockingstaion})
 @user_passes_test(is_admin, login_url='/admin/login/')
 
 def dockingstation_list(request):
