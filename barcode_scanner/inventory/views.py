@@ -58,7 +58,7 @@ def computer_form(request, barcode):
         form = computersForm(instance=computer)
 
    
-    return render(request, 'computer_form.html', {'form': form, 'url': url})
+    return render(request, 'computer_form.html', {'form': form, 'url': url,"pc": computer})
 
 def computers_form(request, pk):
     computer = Computers.objects.get(id=pk)
@@ -206,7 +206,7 @@ def monitor_form(request, barcode):
         
     else:
         form = monitorsForm(instance=monitor)
-    return render(request, 'monitors_form.html', {'form': form, 'url': url})
+    return render(request, 'monitors_form.html', {'form': form, 'url': url,"monitor":monitor})
 
 @user_passes_test(is_admin, login_url='/admin/login/')
 def delete_monitor(request, pk):
@@ -289,7 +289,7 @@ def dockingtation_form(request, barcode):
         form = monitorsForm(instance=dockingstaion)
 
    
-    return render(request, 'docking_stations_form.html', {'form': form, 'url': url})
+    return render(request, 'docking_stations_form.html', {'form': form, 'url': url,'dockingstation':dockingstation})
 @user_passes_test(is_admin, login_url='/admin/login/')
 
 def dockingstation_list(request):
