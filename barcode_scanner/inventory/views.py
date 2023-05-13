@@ -294,4 +294,4 @@ def dockingtation_form(request, barcode):
 
 def dockingstation_list(request):
     dockingstation_items = docking_stations.objects.all()
-    return render(request, 'docking_station_list.html', {'dockingstation_items': dockingstation_items})
+    return render(request, 'docking_station_list.html', {'dockingstation_items': dockingstaion})
