@@ -1,1 +1,1 @@
-web: gunicorn barecode_scanner.wsgi
+web: gunicorn barcode_scanner.wsgi
