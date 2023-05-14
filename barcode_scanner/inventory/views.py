@@ -78,14 +78,33 @@ def computers_form(request, pk):
     return render(request, "computer_form.html", context)
 
 @user_passes_test(is_admin, login_url='/admin/login/')
-def delete_computer(request, pk):
-    computer = Computers.objects.get(id=pk)
+def delete_computer(request, id):
+    computer = Computers.objects.get(id=id)
     computer.delete()
     messages.success(request, "computer's data has been deleted.")
+    print('computer deleted')
     return redirect('computer_list')
+#--------------------new--------------------------------
+@user_passes_test(is_admin, login_url='/admin/login/')
+def add_computer(request):
+    if request.method == 'POST':
+        computerform = computersForm(request.POST)
+        if computerform.is_valid():
+            computerform.save()
+            messages.success(
+                request, 'computerdata has been added.')
+            return redirect('home')
+        else:
+            messages.error(
+                request, 'error while adding computer data.')
+            
+            return redirect('add_computer')
+    else:
+        computerform = computersForm()
 
+    return render(request, 'computer_form.html',{"form":computerform})
 
-
+#------------------end new--------------------------
 @user_passes_test(is_admin, login_url='/admin/login/')
 
 def computer_list(request):
@@ -115,10 +134,11 @@ def update_printer_view(request, pk):
     return render(request, 'printersform.html', context=mydict)
 
 @user_passes_test(is_admin, login_url='/admin/login/')
-def delete_printer(request, pk):
-    printer = printers.objects.get(id=pk)
+def delete_printer(request, id):
+    printer = printers.objects.get(id=id)
     printer.delete()
     messages.success(request, "printer has been deleted.")
+    print('printer deleted')
     return redirect('printers_list')
 
 @user_passes_test(is_admin, login_url='/admin/login/')
@@ -207,16 +227,36 @@ def monitor_form(request, barcode):
     else:
         form = monitorsForm(instance=monitor)
     return render(request, 'monitors_form.html', {'form': form, 'url': url,"monitor":monitor})
+#--------------------new--------------------------------
+@user_passes_test(is_admin, login_url='/admin/login/')
+def add_monitor(request):
+    if request.method == 'POST':
+        monitorform = monitorsForm(request.POST)
+        if monitorform.is_valid():
+            monitorform.save()
+            messages.success(
+                request, 'monitor data has been added.')
+            return redirect('home')
+        else:
+            messages.error(
+                request, 'error while adding monitor data.')
+            
+            return redirect('add_monitor')
+    else:
+        monitorform = monitorsForm()
+
+    return render(request, 'monitors_form.html',{"form":monitorform})
+
+#------------------end new--------------------------
 
 @user_passes_test(is_admin, login_url='/admin/login/')
-def delete_monitor(request, pk):
-    monitor = monitors.objects.get(id=pk)
+def delete_monitor(request, id):
+    monitor = monitors.objects.get(id=id)
     monitor.delete()
     messages.success(request, "monitor has been deleted.")
-    return redirect('monitors_list')
-
-   
-    return render(request, 'monitors_form.html', {'form': form, 'url': url})
+    print('monitor deleted')
+    return redirect('monitors_list') 
+    
 @user_passes_test(is_admin, login_url='/admin/login/')
 def monitor_list(request):
     monitor_items = monitors.objects.all()
@@ -245,10 +285,11 @@ def update_dockingstation_view(request, pk):
     return render(request, 'docking_stations_form.html', context=mydict)
 
 @user_passes_test(is_admin, login_url='/admin/login/')
-def delete_dockingstation(request, pk):
-    dockingstation = docking_stations.objects.get(id=pk)
+def delete_dockingstation(request, id):
+    dockingstation = docking_stations.objects.get(id=id)
     dockingstation.delete()
     messages.success(request, "docking station has been deleted.")
+    print('docking station deleted')
     return redirect('dockingstation_list')
 
 @user_passes_test(is_admin, login_url='/admin/login/')
@@ -290,8 +331,29 @@ def dockingtation_form(request, barcode):
 
    
     return render(request, 'docking_stations_form.html', {'form': form, 'url': url,'dockingstation':dockingstaion})
+#--------------------new--------------------------------
+@user_passes_test(is_admin, login_url='/admin/login/')
+def add_dockingstation(request):
+    if request.method == 'POST':
+        dockingstationform = docking_stationsForm(request.POST)
+        if dockingstationform.is_valid():
+            dockingstationform.save()
+            messages.success(
+                request, 'docking station data has been added.')
+            return redirect('home')
+        else:
+            messages.error(
+                request, 'error while adding docking station data.')
+            
+            return redirect('add_dockingstation')
+    else:
+        dockingstationform = docking_stationsForm()
+
+    return render(request, 'docking_stations_form.html',{"form":dockingstationform})
+
+#------------------end new--------------------------
 @user_passes_test(is_admin, login_url='/admin/login/')
 
 def dockingstation_list(request):
     dockingstation_items = docking_stations.objects.all()
-    return render(request, 'docking_station_list.html', {'dockingstation_items': dockingstaion})
+    return render(request, 'docking_station_list.html', {'dockingstation_items': dockingstation_items})

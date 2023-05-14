@@ -5,7 +5,7 @@
 <div class="bg-gray-200 rounded-lg m-5 w-full">
   <h2 class="m-5 pt-5 font-bold text-xl">Computer Details</h2>
   
-  <form class="m-5" method="post" action="{{ url }}">
+  <form class="m-5" method="post" {% if url %}action="{{ url }}"{%endif%}>
     {% csrf_token %}
     
     <div class="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3 ">
@@ -19,9 +19,9 @@
     {%endfor%}
   </div>
    <!-- <button   type="submit">Save</button> -->
-   <div class="flex gap-4">
-   <div class="pb-10 sm:mt-10"><span class="orang-btn" ><button   type="submit"> Save </button></span></div>
-   <div class="pb-10 sm:mt-10"><a href="{% url 'delete_pc' pc.id %}"><span class="orang-btn" ><button> delete </button></span></a></div>
+   <div class="flex mt-10  gap-4">
+   <div class="pb-10"><span class="orang-btn" ><button   type="submit"> Save </button></span></div>
+   {% if pc %}<div class="pb-10"><a href="{% url 'delete_pc' pc.id %}"><span class="orang-btn" > delete </span></a></div>{% endif %}
   </div>
   </form>
 </div>
