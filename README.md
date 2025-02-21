@@ -1,4 +1,4 @@
-This is a responsive Django web app that I created with the help of my friend Zaid Karadsheh, its goal is to make the life of the IT department at any company easier by allowing them to manage their assets on any platform available. This web app utilizes a third-party Java script package to scan for barcodes (Asset Tag) and auto-fill that scanned barcode into a form where the user can easily fill in other relevant fields and then save update or even delete the item. there are four items that can be managed a Computer/Laptop, a Docking station, a Monitor, and a printer.
+ This is a responsive Django web app that I created with the help of my friend Zaid Karadsheh, its goal is to make the life of the IT department at any company easier by allowing them to manage their assets on any platform available. This web app utilizes a third-party Java script package to scan for barcodes (Asset Tag) and auto-fill that scanned barcode into a form where the user can easily fill in other relevant fields and then save update or even delete the item. there are four items that can be managed a Computer/Laptop, a Docking station, a Monitor, and a printer.
 
 ![main img](https://github.com/michelhaj/asset_management_app/assets/36920883/4701d643-963e-42cd-be5e-88e7710b28a2)
 
@@ -32,5 +32,5 @@ Here you can either choose to manually add the assets or scan the barcode (Asset
 finally, there is an animated popup that shows whenever an action is successful.
 
 ![notification full size](https://github.com/michelhaj/asset_management_app/assets/36920883/c47ffe97-c0c5-485a-8a47-b1a4ccd2e480)
-    usernamedemo
+    username:demo 
     password:demo2024
