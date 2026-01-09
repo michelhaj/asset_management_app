@@ -2,6 +2,7 @@ asgiref==3.6.0
 Django==4.2
 django-browser-reload==1.8.0
 django-extensions==3.2.1
+django-jazzmin==3.0.0
 django-widget-tweaks==1.4.12
 gunicorn==20.1.0
 sqlparse==0.4.4

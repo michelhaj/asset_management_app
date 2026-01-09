@@ -32,6 +32,7 @@ ALLOWED_HOSTS = ["*"]
 # Application definition
 
 INSTALLED_APPS = [
+    "jazzmin",  # Must be before django.contrib.admin
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -145,3 +146,146 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # CSRF_TRUSTED_ORIGINS = ["https://f2d5-2a01-9700-105e-1200-6484-d2bd-79da-49d7.ngrok-free.app"]
 # CSRF_COOKIE_SECURE = False
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# =============================================================================
+# JAZZMIN CONFIGURATION - Modern Admin UI
+# =============================================================================
+
+JAZZMIN_SETTINGS = {
+    # Title & Branding
+    "site_title": "Asset Management",
+    "site_header": "Asset Management",
+    "site_brand": "Asset Manager",
+    "site_logo": None,  # Add your logo path here if needed
+    "login_logo": None,
+    "login_logo_dark": None,
+    "site_logo_classes": "img-circle",
+    "site_icon": None,
+
+    # Welcome text on login screen
+    "welcome_sign": "Welcome to Asset Management System",
+
+    # Copyright on footer
+    "copyright": "Asset Management System",
+
+    # Search model (for the search bar)
+    "search_model": ["inventory.Computers", "inventory.printers", "inventory.monitors", "inventory.docking_stations"],
+
+    # User avatar field
+    "user_avatar": None,
+
+    ############
+    # Top Menu #
+    ############
+    "topmenu_links": [
+        # External URL that opens in a new window
+        {"name": "Home", "url": "admin:index", "permissions": ["auth.view_user"]},
+        # Model admin to link to (Accepts 3 formats: app.model, appname.modelname, appname:modelname)
+        {"model": "auth.User"},
+        # App with dropdown menu to all its models pages
+        {"app": "inventory"},
+    ],
+
+    #############
+    # Side Menu #
+    #############
+    "show_sidebar": True,
+    "navigation_expanded": True,
+    "hide_apps": [],
+    "hide_models": [],
+
+    # Order apps and models in sidebar
+    "order_with_respect_to": [
+        "auth",
+        "inventory",
+        "inventory.Computers",
+        "inventory.printers",
+        "inventory.monitors",
+        "inventory.docking_stations",
+    ],
+
+    # Custom links in side menu
+    "custom_links": {
+        "inventory": [{
+            "name": "Dashboard",
+            "url": "admin:index",
+            "icon": "fas fa-tachometer-alt",
+        }]
+    },
+
+    # Custom icons for apps/models
+    "icons": {
+        "auth": "fas fa-users-cog",
+        "auth.user": "fas fa-user",
+        "auth.Group": "fas fa-users",
+        "inventory": "fas fa-warehouse",
+        "inventory.Computers": "fas fa-laptop",
+        "inventory.printers": "fas fa-print",
+        "inventory.monitors": "fas fa-desktop",
+        "inventory.docking_stations": "fas fa-plug",
+    },
+
+    # Default icon for apps/models
+    "default_icon_parents": "fas fa-chevron-circle-right",
+    "default_icon_children": "fas fa-circle",
+
+    #################
+    # Related Modal #
+    #################
+    "related_modal_active": True,
+
+    #############
+    # UI Tweaks #
+    #############
+    "custom_css": None,
+    "custom_js": None,
+    "use_google_fonts_cdn": True,
+    "show_ui_builder": False,
+
+    ###############
+    # Change view #
+    ###############
+    "changeform_format": "horizontal_tabs",
+    "changeform_format_overrides": {
+        "auth.user": "collapsible",
+        "auth.group": "vertical_tabs",
+    },
+
+    # Language chooser
+    "language_chooser": False,
+}
+
+# Jazzmin UI Tweaks - Best Design Configuration
+JAZZMIN_UI_TWEAKS = {
+    # Navbar settings
+    "navbar_small_text": False,
+    "footer_small_text": False,
+    "body_small_text": False,
+    "brand_small_text": False,
+    "brand_colour": False,
+    "accent": "accent-primary",
+    "navbar": "navbar-dark",
+    "no_navbar_border": False,
+    "navbar_fixed": True,
+    "layout_boxed": False,
+    "footer_fixed": False,
+    "sidebar_fixed": True,
+    "sidebar": "sidebar-dark-primary",
+    "sidebar_nav_small_text": False,
+    "sidebar_disable_expand": False,
+    "sidebar_nav_child_indent": True,
+    "sidebar_nav_compact_style": False,
+    "sidebar_nav_legacy_style": False,
+    "sidebar_nav_flat_style": False,
+    "theme": "default",
+    "dark_mode_theme": "darkly",
+    "button_classes": {
+        "primary": "btn-primary",
+        "secondary": "btn-secondary",
+        "info": "btn-info",
+        "warning": "btn-warning",
+        "danger": "btn-danger",
+        "success": "btn-success"
+    },
+    "actions_sticky_top": True,
+}
