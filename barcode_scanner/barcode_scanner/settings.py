@@ -20,18 +20,27 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-# In production, set this via environment variable: export DJANGO_SECRET_KEY='your-secret-key'
+# SECURITY: Use environment variable for SECRET_KEY in production
 SECRET_KEY = os.environ.get(
     'DJANGO_SECRET_KEY',
     "django-insecure-e1p#34kco+)j86@#n=f3g&i72^%+8ldpwcibs2%9a$4cu90r1n"
 )
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DJANGO_DEBUG', 'True').lower() == 'true'
+# Set DEBUG=False in production via environment variable
+DEBUG = os.environ.get('DJANGO_DEBUG', 'True').lower() in ('true', '1', 'yes')
 
-# In production, set ALLOWED_HOSTS via environment variable
-ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', '*').split(',')
+# Allowed hosts - includes free hosting platforms by default
+# For production, can also set via: DJANGO_ALLOWED_HOSTS='host1,host2'
+_env_hosts = os.environ.get('DJANGO_ALLOWED_HOSTS', '')
+ALLOWED_HOSTS = _env_hosts.split(',') if _env_hosts else [
+    'localhost',
+    '127.0.0.1',
+    '.pythonanywhere.com',
+    '.onrender.com',
+    '.railway.app',
+    '.vercel.app',
+    '.herokuapp.com',
+]
 
 
 # Application definition
@@ -67,6 +76,10 @@ MIDDLEWARE = [
     "inventory.middleware.RateLimitMiddleware",
     'django_browser_reload.middleware.BrowserReloadMiddleware',
 ]
+
+# Only add browser reload in development (requires django_browser_reload to be installed)
+# if DEBUG:
+#     MIDDLEWARE.append('django_browser_reload.middleware.BrowserReloadMiddleware')
 
 ROOT_URLCONF = "barcode_scanner.urls"
 
@@ -168,14 +181,13 @@ USE_TZ = True
 
 STATIC_URL = "/static/"
 
-STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
-
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+# Static files configuration
+STATICFILES_DIRS = [BASE_DIR / "static"]
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
-
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
@@ -183,7 +195,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # HTTPS settings (enable in production)
 if not DEBUG:
-    SECURE_SSL_REDIRECT = True
+    SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'False').lower() == 'true'
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
@@ -194,10 +206,14 @@ if not DEBUG:
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
 
-# CSRF trusted origins (set in production)
-CSRF_TRUSTED_ORIGINS = os.environ.get(
-    'CSRF_TRUSTED_ORIGINS', ''
-).split(',') if os.environ.get('CSRF_TRUSTED_ORIGINS') else []
+# CSRF trusted origins - includes free hosting platforms by default
+_csrf_env = os.environ.get('CSRF_TRUSTED_ORIGINS', '')
+CSRF_TRUSTED_ORIGINS = _csrf_env.split(',') if _csrf_env else [
+    'https://*.pythonanywhere.com',
+    'https://*.onrender.com',
+    'https://*.railway.app',
+    'https://*.vercel.app',
+]
 
 
 # ==================== REST Framework Configuration ====================
