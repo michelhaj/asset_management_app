@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Asset History</h1>
+    <p class="text-muted">Track all changes made to assets</p>
+
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label for="action" class="form-label">Action</label>
+                    <select name="action" id="action" class="form-select">
+                        <option value="">All Actions</option>
+                        <option value="created" {% if action_filter == 'created' %}selected{% endif %}>Created</option>
+                        <option value="updated" {% if action_filter == 'updated' %}selected{% endif %}>Updated</option>
+                        <option value="deleted" {% if action_filter == 'deleted' %}selected{% endif %}>Deleted</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="date_from" class="form-label">From Date</label>
+                    <input type="date" name="date_from" id="date_from" class="form-control" value="{{ date_from }}">
+                </div>
+                <div class="col-md-3">
+                    <label for="date_to" class="form-label">To Date</label>
+                    <input type="date" name="date_to" id="date_to" class="form-control" value="{{ date_to }}">
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="bi bi-funnel me-1"></i>Filter
+                    </button>
+                    <a href="{% url 'asset_history' %}" class="btn btn-outline-secondary">Clear</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- History Table -->
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Date/Time</th>
+                            <th>Asset Type</th>
+                            <th>Asset ID</th>
+                            <th>Action</th>
+                            <th>Changed By</th>
+                            <th>IP Address</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in history %}
+                        <tr>
+                            <td>{{ record.changed_at|date:"Y-m-d H:i:s" }}</td>
+                            <td>{{ record.asset_type }}</td>
+                            <td>{{ record.asset_id }}</td>
+                            <td>
+                                <span class="badge
+                                    {% if record.action == 'created' %}bg-success
+                                    {% elif record.action == 'updated' %}bg-info
+                                    {% elif record.action == 'deleted' %}bg-danger
+                                    {% else %}bg-secondary{% endif %}">
+                                    {{ record.action }}
+                                </span>
+                            </td>
+                            <td>{{ record.changed_by.username|default:"-" }}</td>
+                            <td>{{ record.ip_address|default:"-" }}</td>
+                            <td>
+                                <button type="button" class="btn btn-sm btn-outline-info"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#detailModal{{ record.id }}">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted">No history records found</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if history.has_other_pages %}
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    {% if history.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ history.previous_page_number }}&action={{ action_filter }}&date_from={{ date_from }}&date_to={{ date_to }}">Previous</a>
+                    </li>
+                    {% endif %}
+
+                    <li class="page-item disabled">
+                        <span class="page-link">Page {{ history.number }} of {{ history.paginator.num_pages }}</span>
+                    </li>
+
+                    {% if history.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ history.next_page_number }}&action={{ action_filter }}&date_from={{ date_from }}&date_to={{ date_to }}">Next</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Detail Modals -->
+{% for record in history %}
+<div class="modal fade" id="detailModal{{ record.id }}" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{{ record.asset_type }} {{ record.asset_id }} - {{ record.action }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Date:</strong> {{ record.changed_at }}</p>
+                <p><strong>Changed By:</strong> {{ record.changed_by.username|default:"System" }}</p>
+                <p><strong>IP Address:</strong> {{ record.ip_address|default:"-" }}</p>
+
+                {% if record.old_values %}
+                <h6>Previous Values:</h6>
+                <pre class="bg-light p-2">{{ record.old_values|pprint }}</pre>
+                {% endif %}
+
+                {% if record.new_values %}
+                <h6>New Values:</h6>
+                <pre class="bg-light p-2">{{ record.new_values|pprint }}</pre>
+                {% endif %}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}
