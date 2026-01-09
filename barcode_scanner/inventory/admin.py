@@ -155,7 +155,7 @@ class PrintersAdmin(admin.ModelAdmin):
 
     def get_computers_count(self, obj):
         """Get count of computers using this printer."""
-        count = obj.Computers.count()
+        count = obj.computers.count()
         if count > 0:
             return format_html('<span style="color: blue; font-weight: bold;">{}</span>', count)
         return format_html('<span style="color: gray;">0</span>')

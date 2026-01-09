@@ -15,7 +15,7 @@ class Computers(models.Model):
     # printer = models.BooleanField(max_length=3,blank=True,null=True) 
     # docking_station = models.BooleanField(max_length=3,blank=True,null=True)
     # monitor = models.BooleanField(max_length=3,blank=True,null=True)
-    printers = models.ManyToManyField('printers', related_name='Computers', blank=True,null=True)
+    printers = models.ManyToManyField('printers', related_name='computers', blank=True)
 
     def __str__(self):
         return f"{self.make} - {self.asset_tag} - {self.id}"

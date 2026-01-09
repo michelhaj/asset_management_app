@@ -1,33 +1,63 @@
 {% extends 'base.html' %}
-{%load widget_tweaks%}
+{% load widget_tweaks %}
+
+{% block title %}{% if dockingstation %}Edit Docking Station{% else %}Add Docking Station{% endif %} - Asset Management{% endblock %}
+
 {% block content %}
-<div>
-<div class="bg-gray-200 rounded-lg m-5 w-full">
-  <h2 class="m-5 pt-5 font-bold text-xl">Docking Staion Details</h2>
-  
-  <form class="m-5" method="post" {% if url %}action="{{ url }}"{%endif%}>
-    {% csrf_token %}
-    
-    <div class="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3 ">
-    {% for item in form %}
-  
-    <div class="flex-col justify-center font-semibold">
-      <div>{%render_field item.label %}</div>
-      
-      <div>{%render_field item class+="form-input border-orange-500 border-2"%}</div>
-      </div>
-    {%endfor%}
+<div class="page-header">
+  <div>
+    <nav style="font-size: 0.875rem; color: var(--gray-500); margin-bottom: var(--space-2);">
+      <a href="{% url 'home' %}" style="color: var(--primary); text-decoration: none;">Dashboard</a>
+      <i class="bi bi-chevron-right" style="margin: 0 8px;"></i>
+      <a href="{% url 'dockingstation_list' %}" style="color: var(--primary); text-decoration: none;">Docking Stations</a>
+      <i class="bi bi-chevron-right" style="margin: 0 8px;"></i>
+      <span>{% if dockingstation %}{{ dockingstation.asset_tag }}{% else %}New Docking Station{% endif %}</span>
+    </nav>
+    <h1 class="page-title">{% if dockingstation %}Edit Docking Station{% else %}Add New Docking Station{% endif %}</h1>
   </div>
-   
-  <div class="flex mt-10  gap-4">
+</div>
 
-    <div class=" pb-10"><span class="orang-btn"><button type="submit"> Save </button></span></div>
-    
-    {% if dockingstation %}<div class="pb-10"><a href="{% url 'delete_dockingstation' dockingstation.id %}"><span class="orang-btn" > delete </span></a></div>{% endif %}
+<div class="card">
+  <div class="card-header">
+    <div style="display: flex; align-items: center; gap: var(--space-3);">
+      <div style="width: 40px; height: 40px; border-radius: var(--radius); background: linear-gradient(135deg, var(--success), #059669); display: flex; align-items: center; justify-content: center; color: white;">
+        <i class="bi bi-hdd-network"></i>
+      </div>
+      <h3 class="card-title">Docking Station Details</h3>
+    </div>
+    {% if dockingstation %}
+    <a href="{% url 'delete_dockingstation' dockingstation.id %}" class="btn btn-error btn-sm" onclick="return confirm('Delete this docking station?');">
+      <i class="bi bi-trash"></i> Delete
+    </a>
+    {% endif %}
+  </div>
 
+  <form method="post" {% if url %}action="{{ url }}"{% endif %}>
+    {% csrf_token %}
+    <div class="card-body">
+      <div style="display: grid; grid-template-columns: repeat(1, 1fr); gap: var(--space-4);">
+        {% for item in form %}
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label">{{ item.label }}</label>
+          {% render_field item class="form-input" placeholder=item.label %}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="card-footer" style="display: flex; flex-wrap: wrap; gap: var(--space-3); justify-content: space-between;">
+      <a href="{% url 'dockingstation_list' %}" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Back
+      </a>
+      <button type="submit" class="btn btn-primary">
+        <i class="bi bi-check-lg"></i> {% if dockingstation %}Save{% else %}Add Docking Station{% endif %}
+      </button>
     </div>
   </form>
 </div>
-</div>
 
+<style>
+  @media (min-width: 768px) {
+    .card-body > div { grid-template-columns: repeat(2, 1fr) !important; }
+  }
+</style>
 {% endblock %}
