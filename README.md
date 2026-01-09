@@ -32,5 +32,5 @@ Here you can either choose to manually add the assets or scan the barcode (Asset
 finally, there is an animated popup that shows whenever an action is successful.
 
 ![notification full size](https://github.com/michelhaj/asset_management_app/assets/36920883/c47ffe97-c0c5-485a-8a47-b1a4ccd2e480)
-    username:demo 
-    password:demo2024
+    username:admin
+    password:admin
