@@ -70,36 +70,75 @@
   const stopBtn = document.getElementById('stopBtn');
   const scannerFrame = document.getElementById('scannerFrame');
   const scanningIndicator = document.getElementById('scanningIndicator');
-  let isScanning = false, last_result = [];
+  let isScanning = false;
 
-  function order_by_occurrence(arr) {
+  // Improved detection state - sliding window with confidence
+  const detectionState = {
+    results: [],
+    maxResults: 10,
+    requiredMatches: 5,
+    confidenceThreshold: 0.15,
+    lastDetectedCode: null,
+    processingDetection: false
+  };
+
+  function resetDetectionState() {
+    detectionState.results = [];
+    detectionState.lastDetectedCode = null;
+    detectionState.processingDetection = false;
+  }
+
+  function getBestMatch() {
+    const validResults = detectionState.results;
+    if (validResults.length < detectionState.requiredMatches) return null;
     const counts = {};
-    arr.forEach(v => counts[v] = (counts[v] || 0) + 1);
-    return Object.keys(counts).sort((a, b) => counts[b] - counts[a]);
+    validResults.forEach(r => counts[r.code] = (counts[r.code] || 0) + 1);
+    let bestCode = null, maxCount = 0;
+    for (const code in counts) {
+      if (counts[code] > maxCount) { maxCount = counts[code]; bestCode = code; }
+    }
+    return maxCount >= detectionState.requiredMatches ? bestCode : null;
   }
 
   function load_quagga() {
     if ($('#interactive').length > 0 && navigator.mediaDevices) {
+      resetDetectionState();
       if (Quagga.initialized == undefined) {
         Quagga.onDetected(function(result) {
-          last_result.push(result.codeResult.code);
-          if (last_result.length > 20) {
-            const code = order_by_occurrence(last_result)[0];
-            last_result = [];
+          if (detectionState.processingDetection) return;
+          const code = result.codeResult.code;
+          const error = result.codeResult.error;
+          if (error !== undefined && error > detectionState.confidenceThreshold) return;
+          detectionState.results.push({ code: code, error: error || 0 });
+          if (detectionState.results.length > detectionState.maxResults) detectionState.results.shift();
+          const bestMatch = getBestMatch();
+          if (bestMatch && bestMatch !== detectionState.lastDetectedCode) {
+            detectionState.processingDetection = true;
+            detectionState.lastDetectedCode = bestMatch;
             scannerFrame.classList.add('detected');
             beep.play();
             Quagga.stop();
-            saveBarcode(code);
+            isScanning = false;
+            saveBarcode(bestMatch);
           }
         });
       }
       Quagga.init({
-        inputStream: { name: "Live", type: "LiveStream", constraints: { width: { min: 640, ideal: 1280 }, height: { min: 480, ideal: 720 }, facingMode: "environment" }, target: document.querySelector('#interactive') },
-        decoder: { readers: ["code_128_reader", "ean_reader"] },
-        locator: { halfSample: true, patchSize: 'medium' },
-        locate: true
+        inputStream: {
+          name: "Live", type: "LiveStream",
+          constraints: { width: { min: 640, ideal: 1280, max: 1920 }, height: { min: 480, ideal: 720, max: 1080 }, facingMode: "environment", aspectRatio: { min: 1, max: 2 } },
+          target: document.querySelector('#interactive'),
+          area: { top: "10%", right: "10%", left: "10%", bottom: "10%" }
+        },
+        decoder: {
+          readers: ["code_128_reader", "ean_reader", "ean_8_reader", "code_39_reader", "code_93_reader", "upc_reader", "upc_e_reader", "codabar_reader"],
+          multiple: false
+        },
+        locator: { halfSample: false, patchSize: 'large' },
+        locate: true,
+        frequency: 10
       }, function(err) {
-        if (err) { alert('Error initializing camera'); return; }
+        if (err) { alert('Error initializing camera. Please ensure camera permissions are granted.'); return; }
         Quagga.start();
         isScanning = true;
         updateUI();
@@ -112,12 +151,18 @@
       const ctx = Quagga.canvas.ctx.overlay, canvas = Quagga.canvas.dom.overlay;
       if (result.boxes) { ctx.clearRect(0, 0, parseInt(canvas.getAttribute("width")), parseInt(canvas.getAttribute("height"))); }
       if (result.box) { Quagga.ImageDebug.drawPath(result.box, {x:0,y:1}, ctx, {color:"#6366f1",lineWidth:2}); }
-      if (result.codeResult) { Quagga.ImageDebug.drawPath(result.line, {x:'x',y:'y'}, ctx, {color:'#10b981',lineWidth:3}); }
+      if (result.codeResult && result.codeResult.code) { Quagga.ImageDebug.drawPath(result.line, {x:'x',y:'y'}, ctx, {color:'#10b981',lineWidth:3}); }
     }
   });
 
-  function startScanning() { if (!navigator.mediaDevices) { alert('Camera not supported'); return; } scannerFrame.classList.remove('detected'); load_quagga(); }
-  function stopScanning() { Quagga.stop(); isScanning = false; updateUI(); }
+  function startScanning() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { alert('Camera access not supported in this browser.'); return; }
+    scannerFrame.classList.remove('detected');
+    resetDetectionState();
+    load_quagga();
+  }
+
+  function stopScanning() { Quagga.stop(); isScanning = false; resetDetectionState(); updateUI(); }
   function updateUI() { startBtn.style.display = isScanning ? 'none' : 'inline-flex'; stopBtn.style.display = isScanning ? 'inline-flex' : 'none'; scanningIndicator.style.display = isScanning ? 'block' : 'none'; }
 
   function saveBarcode(barcode_data) {
@@ -126,7 +171,7 @@
       url: '{% url "save_barcode_monitor" %}', timeout: 10000, method: 'POST',
       data: { barcode_data: barcode_data, csrfmiddlewaretoken: '{{ csrf_token }}' },
       success: function(response) { window.location.href = '{% url "monitor_form" barcode=0 %}'.replace('0', barcode_data); },
-      error: function() { window.location.href = '{% url "monitor_form" barcode=0 %}'.replace('0', barcode_data); }
+      error: function() { alert('Error processing barcode. Redirecting to form...'); window.location.href = '{% url "monitor_form" barcode=0 %}'.replace('0', barcode_data); }
     });
   }
   updateUI();

@@ -258,32 +258,88 @@
   const scannerFrame = document.getElementById('scannerFrame');
   const scanningIndicator = document.getElementById('scanningIndicator');
 
-  function order_by_occurrence(arr) {
-    const counts = {};
-    arr.forEach(value => {
-      counts[value] = (counts[value] || 0) + 1;
-    });
-    return Object.keys(counts).sort((a, b) => counts[b] - counts[a]);
+  let isScanning = false;
+
+  // Improved detection state - sliding window with confidence
+  const detectionState = {
+    results: [],           // Sliding window of recent results
+    maxResults: 10,        // Keep only last 10 results (faster detection)
+    requiredMatches: 5,    // Need 5 consistent reads
+    confidenceThreshold: 0.15,  // Max error rate (lower = more confident)
+    lastDetectedCode: null,
+    processingDetection: false
+  };
+
+  function resetDetectionState() {
+    detectionState.results = [];
+    detectionState.lastDetectedCode = null;
+    detectionState.processingDetection = false;
   }
 
-  let isScanning = false;
-  let last_result = [];
+  // Get the most frequent code that meets confidence requirements
+  function getBestMatch() {
+    const validResults = detectionState.results;
+    if (validResults.length < detectionState.requiredMatches) return null;
+
+    // Count occurrences
+    const counts = {};
+    validResults.forEach(r => {
+      counts[r.code] = (counts[r.code] || 0) + 1;
+    });
+
+    // Find the code with most occurrences
+    let bestCode = null;
+    let maxCount = 0;
+    for (const code in counts) {
+      if (counts[code] > maxCount) {
+        maxCount = counts[code];
+        bestCode = code;
+      }
+    }
+
+    // Require at least requiredMatches consistent reads
+    if (maxCount >= detectionState.requiredMatches) {
+      return bestCode;
+    }
+    return null;
+  }
 
   function load_quagga() {
     if ($('#interactive').length > 0 && navigator.mediaDevices && typeof navigator.mediaDevices.getUserMedia === 'function') {
 
+      resetDetectionState();
+
       if (Quagga.initialized == undefined) {
         Quagga.onDetected(function(result) {
-          const last_code = result.codeResult.code;
-          last_result.push(last_code);
+          if (detectionState.processingDetection) return;
 
-          if (last_result.length > 20) {
-            const code = order_by_occurrence(last_result)[0];
-            last_result = [];
+          const code = result.codeResult.code;
+          const error = result.codeResult.error;
+
+          // Only accept high-confidence results (error is 0-1, lower is better)
+          if (error !== undefined && error > detectionState.confidenceThreshold) {
+            return; // Skip low-confidence detections
+          }
+
+          // Add to sliding window
+          detectionState.results.push({ code: code, error: error || 0 });
+
+          // Keep only recent results (sliding window)
+          if (detectionState.results.length > detectionState.maxResults) {
+            detectionState.results.shift();
+          }
+
+          // Check for consistent match
+          const bestMatch = getBestMatch();
+          if (bestMatch && bestMatch !== detectionState.lastDetectedCode) {
+            detectionState.processingDetection = true;
+            detectionState.lastDetectedCode = bestMatch;
+
             scannerFrame.classList.add('detected');
             beep.play();
             Quagga.stop();
-            saveBarcode(code);
+            isScanning = false;
+            saveBarcode(bestMatch);
           }
         });
       }
@@ -298,16 +354,33 @@
             facingMode: "environment",
             aspectRatio: { min: 1, max: 2 }
           },
-          target: document.querySelector('#interactive')
+          target: document.querySelector('#interactive'),
+          area: { // Focus on center 80% of the frame for faster processing
+            top: "10%",
+            right: "10%",
+            left: "10%",
+            bottom: "10%"
+          }
         },
         decoder: {
-          readers: ["code_128_reader", "ean_reader", "ean_8_reader", "code_39_reader", "upc_reader", "upc_e_reader"]
+          readers: [
+            "code_128_reader",
+            "ean_reader",
+            "ean_8_reader",
+            "code_39_reader",
+            "code_93_reader",
+            "upc_reader",
+            "upc_e_reader",
+            "codabar_reader"
+          ],
+          multiple: false  // Only detect one barcode at a time
         },
         locator: {
-          halfSample: true,
-          patchSize: 'medium',
+          halfSample: false,  // Full resolution for better accuracy
+          patchSize: 'large', // Larger patches = faster but may miss small barcodes
         },
-        locate: true
+        locate: true,
+        frequency: 10  // Process 10 frames per second (reduces CPU usage)
       }, function(err) {
         if (err) {
           console.error(err);
@@ -350,12 +423,14 @@
       return;
     }
     scannerFrame.classList.remove('detected');
+    resetDetectionState();
     load_quagga();
   }
 
   function stopScanning() {
     Quagga.stop();
     isScanning = false;
+    resetDetectionState();
     updateUI();
   }
 
