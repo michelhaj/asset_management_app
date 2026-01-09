@@ -21,28 +21,26 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY: Use environment variable for SECRET_KEY in production
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-e1p#34kco+)j86@#n=f3g&i72^%+8ldpwcibs2%9a$4cu90r1n')
+SECRET_KEY = os.environ.get(
+    'DJANGO_SECRET_KEY',
+    "django-insecure-e1p#34kco+)j86@#n=f3g&i72^%+8ldpwcibs2%9a$4cu90r1n"
+)
 
 # Set DEBUG=False in production via environment variable
 DEBUG = os.environ.get('DJANGO_DEBUG', 'True').lower() in ('true', '1', 'yes')
 
-# Allowed hosts for free hosting platforms
-# Replace 'yourusername' with your actual username on each platform
-ALLOWED_HOSTS = [
+# Allowed hosts - includes free hosting platforms by default
+# For production, can also set via: DJANGO_ALLOWED_HOSTS='host1,host2'
+_env_hosts = os.environ.get('DJANGO_ALLOWED_HOSTS', '')
+ALLOWED_HOSTS = _env_hosts.split(',') if _env_hosts else [
     'localhost',
     '127.0.0.1',
-    '.pythonanywhere.com',  # PythonAnywhere
-    '.onrender.com',         # Render
-    '.railway.app',          # Railway
-    '.vercel.app',           # Vercel
-    '.herokuapp.com',        # Heroku (if you have free credits)
+    '.pythonanywhere.com',
+    '.onrender.com',
+    '.railway.app',
+    '.vercel.app',
+    '.herokuapp.com',
 ]
-
-# Add your specific domain when you know it
-PYTHONANYWHERE_USERNAME = os.environ.get('PYTHONANYWHERE_USERNAME', '')
-if PYTHONANYWHERE_USERNAME:
-    ALLOWED_HOSTS.append(f'{PYTHONANYWHERE_USERNAME}.pythonanywhere.com')
-
 
 
 # Application definition
@@ -54,18 +52,16 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    'inventory',
-    # "django_extensions",
-    # "tailwind",
-    # "theme",
-    # "django_browser_reload",
+    # Third-party apps
+    "rest_framework",
+    "rest_framework.authtoken",
+    "django_filters",
     "widget_tweaks",
+    "django_browser_reload",
+    # Local apps
+    'inventory',
 ]
 
-
-# NPM_BIN_PATH = "C:/Program Files/nodejs/npm.cmd"
-# TAILWIND_APP_NAME="theme"
-# INTERNAL_IPS=["*",]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -76,6 +72,9 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "inventory.middleware.AuditMiddleware",
+    "inventory.middleware.RateLimitMiddleware",
+    'django_browser_reload.middleware.BrowserReloadMiddleware',
 ]
 
 # Only add browser reload in development (requires django_browser_reload to be installed)
@@ -105,13 +104,45 @@ WSGI_APPLICATION = "barcode_scanner.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
+# In production, use PostgreSQL:
+# export DATABASE_URL='postgres://user:pass@host:5432/dbname'
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+DATABASE_URL = os.environ.get('DATABASE_URL')
+
+if DATABASE_URL:
+    # Production database (PostgreSQL)
+    import dj_database_url
+    DATABASES = {
+        'default': dj_database_url.config(default=DATABASE_URL, conn_max_age=600)
     }
-}
+else:
+    # Development database (SQLite)
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
+
+
+# Cache configuration
+# In production, use Redis: export REDIS_URL='redis://localhost:6379/0'
+REDIS_URL = os.environ.get('REDIS_URL')
+
+if REDIS_URL:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+            'LOCATION': REDIS_URL,
+        }
+    }
+else:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'unique-snowflake',
+        }
+    }
 
 
 # Password validation
@@ -159,44 +190,131 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# Security settings for production
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
-# CSRF trusted origins for free hosting platforms
-# Add your specific domain when you deploy
-CSRF_TRUSTED_ORIGINS = [
+# ==================== Security Settings ====================
+
+# HTTPS settings (enable in production)
+if not DEBUG:
+    SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'False').lower() == 'true'
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    X_FRAME_OPTIONS = 'DENY'
+    SECURE_HSTS_SECONDS = 31536000  # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+
+# CSRF trusted origins - includes free hosting platforms by default
+_csrf_env = os.environ.get('CSRF_TRUSTED_ORIGINS', '')
+CSRF_TRUSTED_ORIGINS = _csrf_env.split(',') if _csrf_env else [
     'https://*.pythonanywhere.com',
     'https://*.onrender.com',
     'https://*.railway.app',
     'https://*.vercel.app',
 ]
 
-# Production security settings (when DEBUG=False)
-if not DEBUG:
-    CSRF_COOKIE_SECURE = True
-    SESSION_COOKIE_SECURE = True
 
-# Logging configuration
+# ==================== REST Framework Configuration ====================
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 25,
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend',
+        'rest_framework.filters.SearchFilter',
+        'rest_framework.filters.OrderingFilter',
+    ],
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle'
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '100/hour',
+        'user': '1000/hour'
+    }
+}
+
+
+# ==================== Email Configuration ====================
+# In production, configure SMTP settings via environment variables
+
+EMAIL_BACKEND = os.environ.get(
+    'EMAIL_BACKEND',
+    'django.core.mail.backends.console.EmailBackend'  # Default to console in development
+)
+
+# SMTP settings (for production)
+EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
+EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True').lower() == 'true'
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@assetmanagement.local')
+
+# Admin email for notifications
+ADMINS = [
+    ('Admin', os.environ.get('ADMIN_EMAIL', 'admin@assetmanagement.local')),
+]
+
+
+# ==================== Logging Configuration ====================
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
         'verbose': {
-            'format': '{levelname} {asctime} {module} {message}',
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
             'style': '{',
         },
     },
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
+        'file': {
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs', 'django.log') if os.path.exists(os.path.join(BASE_DIR, 'logs')) else '/tmp/django.log',
             'formatter': 'verbose',
         },
     },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
     'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': os.environ.get('DJANGO_LOG_LEVEL', 'INFO'),
+            'propagate': False,
+        },
         'inventory': {
             'handlers': ['console'],
-            'level': 'INFO',
-            'propagate': True,
+            'level': 'DEBUG' if DEBUG else 'INFO',
+            'propagate': False,
         },
     },
 }
+
+
+# ==================== Asset Management Settings ====================
+
+# Warranty expiration reminder days
+WARRANTY_REMINDER_DAYS = int(os.environ.get('WARRANTY_REMINDER_DAYS', 30))
+
+# Maximum file upload size for bulk import (in bytes)
+MAX_UPLOAD_SIZE = int(os.environ.get('MAX_UPLOAD_SIZE', 10 * 1024 * 1024))  # 10MB default

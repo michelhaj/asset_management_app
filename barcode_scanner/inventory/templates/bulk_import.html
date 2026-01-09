@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Bulk Import</h1>
+    <p class="text-muted">Import multiple assets from a CSV file</p>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Upload CSV File</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="asset_type" class="form-label">Asset Type</label>
+                            <select name="asset_type" id="asset_type" class="form-select" required>
+                                <option value="">Select asset type...</option>
+                                <option value="computers">Computers</option>
+                                <option value="printers">Printers</option>
+                                <option value="monitors">Monitors</option>
+                                <option value="docking_stations">Docking Stations</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="csv_file" class="form-label">CSV File</label>
+                            <input type="file" name="csv_file" id="csv_file" class="form-control" accept=".csv" required>
+                            <div class="form-text">
+                                Upload a CSV file with asset data. Download a template first to ensure correct format.
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-upload me-2"></i>Import
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Download Templates</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Download a CSV template with the correct columns for each asset type.</p>
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'import_template_csv' 'computers' %}" class="btn btn-outline-primary">
+                            <i class="bi bi-download me-2"></i>Computers Template
+                        </a>
+                        <a href="{% url 'import_template_csv' 'printers' %}" class="btn btn-outline-success">
+                            <i class="bi bi-download me-2"></i>Printers Template
+                        </a>
+                        <a href="{% url 'import_template_csv' 'monitors' %}" class="btn btn-outline-warning">
+                            <i class="bi bi-download me-2"></i>Monitors Template
+                        </a>
+                        <a href="{% url 'import_template_csv' 'docking_stations' %}" class="btn btn-outline-info">
+                            <i class="bi bi-download me-2"></i>Docking Stations Template
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="mb-0">Export Existing Data</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Export current assets to CSV for backup or editing.</p>
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'export_computers_csv' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-file-earmark-spreadsheet me-2"></i>Export Computers
+                        </a>
+                        <a href="{% url 'export_printers_csv' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-file-earmark-spreadsheet me-2"></i>Export Printers
+                        </a>
+                        <a href="{% url 'export_monitors_csv' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-file-earmark-spreadsheet me-2"></i>Export Monitors
+                        </a>
+                        <a href="{% url 'export_docking_stations_csv' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-file-earmark-spreadsheet me-2"></i>Export Docking Stations
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Import Instructions</h5>
+                </div>
+                <div class="card-body">
+                    <ol>
+                        <li>Download the appropriate template for the asset type you want to import.</li>
+                        <li>Fill in the template with your asset data. The first row contains column headers - do not modify them.</li>
+                        <li>Save the file as a CSV (Comma Separated Values) file.</li>
+                        <li>Select the asset type and upload the CSV file.</li>
+                        <li>The system will validate and import the data. Existing assets (matched by Asset Tag or Service Tag) will be updated.</li>
+                    </ol>
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <strong>Note:</strong> Date fields should be in YYYY-MM-DD format (e.g., 2024-01-15).
+                        Status should be one of: active, retired, repair, disposed, available.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
