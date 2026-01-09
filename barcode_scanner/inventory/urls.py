@@ -18,7 +18,7 @@ urlpatterns = [
     path('add-computer/', views.add_computer, name='add_computer'),
 
     # ==================== Docking Stations ====================
-    path('dockingstation-form/<str:barcode>/', views.dockingtation_form, name='dockingstation_form'),
+    path('dockingstation-form/<str:barcode>/', views.dockingstation_form, name='dockingstation_form'),
     path('dockingstation/<str:pk>/', views.update_dockingstation_view, name='dockingstation_page'),
     path('save-barcode-dockingstation/', views.save_barcode_dockingstation, name='save_barcode_dockingstation'),
     path('scan-dockingstation/', views.scan_dockingstation, name='scan_dockingstation'),
@@ -30,7 +30,7 @@ urlpatterns = [
     path('monitor-form/<str:barcode>/', views.monitor_form, name='monitor_form'),
     path('monitor/<str:pk>/', views.update_monitor_view, name='monitors_page'),
     path('save-barcode_monitor/', views.save_barcode_monitor, name='save_barcode_monitor'),
-    path('scan-monitor/', views.scan_mointor, name='scan_monitor'),
+    path('scan-monitor/', views.scan_monitor, name='scan_monitor'),
     path('monitors-list/', views.monitor_list, name='monitors_list'),
     path('delete_monitor/<str:id>/', views.delete_monitor, name='delete_monitor'),
     path('add-monitor/', views.add_monitor, name='add_monitor'),

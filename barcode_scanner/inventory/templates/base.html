@@ -1,202 +1,391 @@
-
 <!DOCTYPE html>
-
-<html lang="en"  class="min-h-screen">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#6366f1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
   {% load static %}
-  
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    {% comment %} <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" integrity="sha512-wnea99uKIC3TJF7v4eKk4Y+lMz2Mklv18+r4na2Gn1abDRPPOeef95xTzdwGD9e6zXJBteMIhZ1+68QC5byJZw==" crossorigin="anonymous" referrerpolicy="no-referrer" > {% endcomment %}
-    {% comment %} <link href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css" rel="stylesheet"> {% endcomment %}
 
-  <link rel="stylesheet" href="{% static '/css/site.css' %}">
+  <!-- Google Fonts - Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
+  <!-- Modern CSS -->
+  <link rel="stylesheet" href="{% static 'css/modern.css' %}">
+
+  <!-- ZXing Barcode Library -->
   <script src="https://unpkg.com/@zxing/library@0.18.6/umd/index.min.js"></script>
+
+  <!-- jQuery -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  {% comment %} <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script> {% endcomment %}
-  {% comment %} <script src="{% static '/js/quagga.min.js' %}">></script> {% endcomment %}
-  {% comment %} <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script> {% endcomment %}
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;800&display=swap"
-  rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
 
+  {% block header %}{% endblock header %}
 
-  {% block header %}{% endblock header%}
-
-
-  <title>{% block title %}{% endblock title%}</title>
+  <title>{% block title %}Asset Management{% endblock title %}</title>
 </head>
 <body>
-   {%include "notifications.html"%}
-<div class=" min-h-screen grid md:grid-cols-9">
-  <div class="bg-white md:col-span-2 md:flex md:justify-end">
-    <nav class="text-right mr-3" >
-      <div class="flex justify-between items-center">
-        <h1 class="ml-3 mt-3">
-          <a class=" text-sm md:text-xl hover:text-gray-800" href='{% url "home" %}'>Assets Management System</a>
-        </h1>
-        <div class="px-4 cursor-pointer md:hidden" id='burger'>
-          <svg class="w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-          </svg>
-          
-        </div>
-      </div>
-      <ul class="text-md lg:text-lg mt-20 hidden md:block" id="menu">
-        <div class="p-2.5 mt-2 flex items-center printer rounded-md px-4 duration-300 cursor-pointer  hover:bg-blue-600">
-          <i class="bi bi-grid"></i>
-          <div class="flex justify-between w-full items-center">
-            <a id="indexa" href="{% url "home" %}"><span class=" ml-4 ">Home</span></a>
-          </div>
-        </div>
-        
-        <div class="p-2.5 mt-2 flex items-center printer rounded-md px-4 duration-300 cursor-pointer  hover:bg-blue-600">
-          <i class="bi bi-laptop"></i>
-          <div class="flex justify-between w-full items-center">
-            <a id="indexa" href="{% url 'index' %}"><span class=" ml-4 ">Scan computer</span></a>
-            <span class="text-lg text-orange-500">
-              <i class="bi bi-upc-scan"></i>
-            </span>
-          </div>
-        </div>
-        <div class="p-2.5 mt-2 flex items-center printer rounded-md px-4 duration-300 cursor-pointer  hover:bg-blue-600">
-          <i class="bi bi-hdd-network"></i>
-          <div class="flex justify-between w-full items-center">
-            <a id="indexa" href="{% url 'scan_dockingstation' %}"><span class=" ml-4 ">Scan Docks</span></a>
-            <span class="text-lg text-orange-500">
-              <i class="bi bi-upc-scan"></i>
-            </span>
-          </div>
-        </div>
-        
-        <div class="p-2.5 mt-2 flex items-center printer rounded-md px-4 duration-300 cursor-pointer  hover:bg-blue-600">
-          <i class="bi bi-display"></i>
-          <div class="flex justify-between w-full items-center">
-            <a id="indexa" href="{% url 'scan_monitor' %}"><span class=" ml-4 ">Scan Monitor</span></a>
-            <span class="text-lg text-orange-500">
-              <i class="bi bi-upc-scan"></i>
-            </span>
-          </div>
-        </div>
-        <div class="p-2.5 mt-2 flex items-center printer rounded-md px-4 duration-300 cursor-pointer  hover:bg-blue-600">
-          <i class="bi bi-printer"></i>
-          <div class="flex justify-between w-full items-center">
-            <a id="indexa" href="{% url 'add_printer' %}"><span class=" ml-4 ">Add Printer</span></a>
-            <span class="text-lg text-orange-500 ">
-              <i class="bi bi-plus"></i>
-            </span>
-          </div>
-        </div>
-      <!-- new -->
-      <div class="p-2.5 mt-2 flex items-center rounded-md px-4 duration-300 cursor-pointer  hover:bg-blue-600">
-        <i class="bi bi-list-ul"></i>
-        <div class="flex justify-between w-full items-center" onclick="dropDown()">
-          <span class=" ml-4 ">Assets List</span>
-          <span class="text-lg rotate-180 text-orange-500" id="arrow">
-            <i class="bi bi-chevron-down"></i>
-          </span>
-        </div>
-      </div>
-      <div class=" leading-7 text-left text-sm font-semibold mt-2 w-4/5 mx-auto" id="submenu">
-        <ul>
-          <li class="py-1" id="complist">
-            <a id="complista" class="px-2 flex justify-end border-r-4 border-white" href='{% url "computer_list" %}'><span>Computers List</span>
-              <span class="text-sm lg:text-lg"><i class="bi bi-laptop w-5 ml-3"></i></span>
-          </a>
-          </li>
-          <li class="py-1" id="complist">
-            <a id="complista" class="px-2 flex justify-end border-r-4 border-white" href='{% url "printers_list" %}'><span>Printers List</span>
-              <span class="text-sm lg:text-lg"><i class="bi bi-printer w-5 ml-3"></i></span>
-          </a>
-          </li>
-        </li>
-        <li class="py-1" id="complist">
-          <a id="complista" class="px-2 flex justify-end border-r-4 border-white" href='{% url "monitors_list" %}'><span>Monitors List</span>
-          <svg class="w-5 ml-3"  xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25" />
-          </svg>
+  <!-- Toast Notifications Container -->
+  <div class="toast-container" id="toastContainer">
+    {% include "notifications.html" %}
+  </div>
+
+  <div class="app-container">
+    <!-- Mobile Header -->
+    <header class="mobile-header">
+      <button class="icon-btn" id="menuToggle" aria-label="Menu">
+        <i class="bi bi-list" style="font-size: 1.5rem;"></i>
+      </button>
+
+      <span class="mobile-logo">AssetHub</span>
+
+      <div class="mobile-actions">
+        <a href="/admin/" class="icon-btn" aria-label="Admin">
+          <i class="bi bi-gear"></i>
         </a>
-        </li>
-        <li class="py-1" id="complist">
-          <a id="complista" class="px-2 flex justify-end border-r-4 border-white" href='{% url "dockingstation_list" %}'><span>Docking Station List</span>
-            <span class="text-sm lg:text-lg"><i class="bi bi-hdd-network w-5 ml-3"></i></span>
+        <a href="{% url 'logout' %}" class="icon-btn" aria-label="Logout">
+          <i class="bi bi-box-arrow-right"></i>
         </a>
-        </li>
-        </ul>
       </div>
-      <!-- end new -->
-  
-      </ul>
+    </header>
+
+    <!-- Mobile Slide-out Menu Overlay -->
+    <div class="mobile-menu-overlay" id="mobileMenuOverlay">
+      <aside class="mobile-menu">
+        <div class="mobile-menu-header">
+          <span class="mobile-logo">AssetHub</span>
+          <button class="icon-btn" id="menuClose">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        </div>
+
+        <nav class="mobile-menu-nav">
+          <div class="nav-section">
+            <div class="nav-section-title">Main Menu</div>
+            <a href="{% url 'home' %}" class="nav-item">
+              <i class="bi bi-house"></i>
+              <span>Dashboard</span>
+            </a>
+          </div>
+
+          <div class="nav-section">
+            <div class="nav-section-title">Scanners</div>
+            <a href="{% url 'index' %}" class="nav-item">
+              <i class="bi bi-upc-scan"></i>
+              <span>Scan Computer</span>
+            </a>
+            <a href="{% url 'scan_monitor' %}" class="nav-item">
+              <i class="bi bi-display"></i>
+              <span>Scan Monitor</span>
+            </a>
+            <a href="{% url 'scan_dockingstation' %}" class="nav-item">
+              <i class="bi bi-hdd-network"></i>
+              <span>Scan Docking Station</span>
+            </a>
+            <a href="{% url 'add_printer' %}" class="nav-item">
+              <i class="bi bi-printer"></i>
+              <span>Add Printer</span>
+            </a>
+          </div>
+
+          <div class="nav-section">
+            <div class="nav-section-title">Asset Lists</div>
+            <a href="{% url 'computer_list' %}" class="nav-item">
+              <i class="bi bi-laptop"></i>
+              <span>Computers</span>
+            </a>
+            <a href="{% url 'printers_list' %}" class="nav-item">
+              <i class="bi bi-printer"></i>
+              <span>Printers</span>
+            </a>
+            <a href="{% url 'monitors_list' %}" class="nav-item">
+              <i class="bi bi-display"></i>
+              <span>Monitors</span>
+            </a>
+            <a href="{% url 'dockingstation_list' %}" class="nav-item">
+              <i class="bi bi-hdd-network"></i>
+              <span>Docking Stations</span>
+            </a>
+          </div>
+
+          <div class="nav-section">
+            <div class="nav-section-title">Account</div>
+            <a href="/admin/" class="nav-item">
+              <i class="bi bi-gear"></i>
+              <span>Admin Panel</span>
+            </a>
+            <a href="{% url 'logout' %}" class="nav-item">
+              <i class="bi bi-box-arrow-right"></i>
+              <span>Logout</span>
+            </a>
+          </div>
+        </nav>
+      </aside>
+    </div>
+
+    <!-- Desktop Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <h1>AssetHub</h1>
+        <p style="font-size: 0.75rem; color: var(--gray-500); margin-top: 4px;">Asset Management System</p>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">Main</div>
+          <a href="{% url 'home' %}" class="nav-item" id="nav-home">
+            <i class="bi bi-grid-1x2"></i>
+            <span>Dashboard</span>
+          </a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">Scanners</div>
+          <a href="{% url 'index' %}" class="nav-item" id="nav-scan-computer">
+            <i class="bi bi-upc-scan"></i>
+            <span>Scan Computer</span>
+            <span class="badge">Quick</span>
+          </a>
+          <a href="{% url 'scan_monitor' %}" class="nav-item" id="nav-scan-monitor">
+            <i class="bi bi-display"></i>
+            <span>Scan Monitor</span>
+          </a>
+          <a href="{% url 'scan_dockingstation' %}" class="nav-item" id="nav-scan-dock">
+            <i class="bi bi-hdd-network"></i>
+            <span>Scan Docking Station</span>
+          </a>
+          <a href="{% url 'add_printer' %}" class="nav-item" id="nav-add-printer">
+            <i class="bi bi-printer"></i>
+            <span>Add Printer</span>
+          </a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">Asset Lists</div>
+          <a href="{% url 'computer_list' %}" class="nav-item" id="nav-computers">
+            <i class="bi bi-laptop"></i>
+            <span>Computers</span>
+          </a>
+          <a href="{% url 'printers_list' %}" class="nav-item" id="nav-printers">
+            <i class="bi bi-printer"></i>
+            <span>Printers</span>
+          </a>
+          <a href="{% url 'monitors_list' %}" class="nav-item" id="nav-monitors">
+            <i class="bi bi-display"></i>
+            <span>Monitors</span>
+          </a>
+          <a href="{% url 'dockingstation_list' %}" class="nav-item" id="nav-docks">
+            <i class="bi bi-hdd-network"></i>
+            <span>Docking Stations</span>
+          </a>
+        </div>
+      </nav>
+
+      <!-- Sidebar Footer -->
+      <div style="padding: var(--space-4); border-top: 1px solid var(--gray-200); margin-top: auto;">
+        <div style="display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-3);">
+          <div style="width: 40px; height: 40px; border-radius: var(--radius-full); background: linear-gradient(135deg, var(--primary), var(--secondary)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">
+            <i class="bi bi-person"></i>
+          </div>
+          <div>
+            <div style="font-weight: 600; font-size: 0.875rem;">Admin</div>
+            <div style="font-size: 0.75rem; color: var(--gray-500);">Administrator</div>
+          </div>
+        </div>
+        <div style="display: flex; gap: var(--space-2);">
+          <a href="/admin/" class="btn btn-secondary btn-sm" style="flex: 1;">
+            <i class="bi bi-gear"></i>
+            Settings
+          </a>
+          <a href="{% url 'logout' %}" class="btn btn-outline btn-sm" style="flex: 1;">
+            <i class="bi bi-box-arrow-right"></i>
+            Logout
+          </a>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      {% block content %}
+      {% endblock content %}
+    </main>
+
+    <!-- Mobile Bottom Navigation -->
+    <nav class="bottom-nav">
+      <a href="{% url 'home' %}" class="bottom-nav-item" id="bnav-home">
+        <i class="bi bi-house"></i>
+        <span>Home</span>
+      </a>
+      <a href="{% url 'index' %}" class="bottom-nav-item" id="bnav-scan">
+        <i class="bi bi-upc-scan"></i>
+        <span>Scan</span>
+      </a>
+      <a href="{% url 'computer_list' %}" class="bottom-nav-item" id="bnav-assets">
+        <i class="bi bi-laptop"></i>
+        <span>Assets</span>
+      </a>
+      <a href="#" class="bottom-nav-item" id="addAssetBtn">
+        <i class="bi bi-plus-circle"></i>
+        <span>Add</span>
+      </a>
+      <a href="#" class="bottom-nav-item" id="moreBtn">
+        <i class="bi bi-three-dots"></i>
+        <span>More</span>
+      </a>
     </nav>
   </div>
 
-  <main class="min-h-screen bg-gray-100 md:col-span-7">
-    <div class="flex  mt-3 mr-10 justify-center md:justify-end ">
-      <a href="/admin/" class="rounded-full py-2 px-3 uppercase text-orange-500 text-xs font-bold cursor-pointer tracking-wider
-       border-orange-500 border-2 hover:bg-orange-500 hover:text-white transition ease-out duration-500"><span>Admin</a>
-      <a href="{% url 'logout' %}" class=" rounded-full py-2 px-3 text-orange-500 uppercase text-xs font-bold cursor-pointer
-       tracking-wider ml-3 border-orange-500 border-2 hover:bg-orange-500 hover:text-white transition ease-out duration-500">Logout</a>
-    </div>
-    <div class="flex m-5">
-    <div class="flex flex-row justify-between bg-white rounded-lg shadow-md w-full  p-3 overflow-hidden  lg:w-full">
-    
-    <h2 class="text-center px-2
-    pb-5">Database Support</h2>
-    <div class="flex flex-col gap-4">
-      <div id="addassets" class="w-full text-end"><span class="w-40 "><a href="#" class="bg-blue-500
-    text-white p-3 text-center
-    hover:bg-blue-800 transition-all
-    duration-500 text-xs md:text-sm rounded-lg">Add Asset</a></span></div>
-    <div class="w-full border-orange-500 flex flex-row gap-1 md:gap-2 hidden" id="buttons-div">
-      <a href="{% url 'index' %}" class="rounded-lg md:rounded-full py-2 px-1 md:px-2 uppercase text-orange-500 text-xxs md:text-xs font-semibold md:font-bold cursor-pointer tracking-wider
-       border-orange-500 border-2 hover:bg-orange-500 hover:text-white transition ease-out duration-500"><span>Add Computer</a>
-        <a href="{% url 'scan_monitor' %}"class="rounded-lg md:rounded-full py-2 px-1 md:px-2 uppercase text-orange-500 text-xxs md:text-xs font-semibold md:font-bold cursor-pointer tracking-wider
-       border-orange-500 border-2 hover:bg-orange-500 hover:text-white transition ease-out duration-500"><span>Add Monitor</a>
-        <a href="{% url 'scan_dockingstation' %}" class="rounded-lg md:rounded-full py-2 px-1 md:px-2 uppercase text-orange-500 text-xxs md:text-xs font-semibold md:font-bold cursor-pointer tracking-wider
-       border-orange-500 border-2 hover:bg-orange-500 hover:text-white transition ease-out duration-500"><span>Add Docking Station</a>
-        <a href="{% url 'add_printer' %}" class="rounded-lg md:rounded-full py-2 px-1 md:px-2 uppercase text-orange-500 text-xxs md:text-xs font-semibold md:font-bold cursor-pointer tracking-wider
-       border-orange-500 border-2 hover:bg-orange-500 hover:text-white transition ease-out duration-500"><span>Add printer</a>
-    </div>
-    
-  </div>
-    </div>
-  </div>
-   
-
-
-      <div>
-        <!-- cards go here -->
-        <div class="ml-5 mr-10">
-          {% block content %}
-          {% endblock content %}
+  <!-- Add Asset Modal (Mobile) -->
+  <div id="addAssetModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; align-items: flex-end; justify-content: center;">
+    <div style="background: var(--bg-primary); width: 100%; max-width: 500px; border-radius: var(--radius-xl) var(--radius-xl) 0 0; padding: var(--space-6); animation: slideUp 0.3s ease;">
+      <div style="width: 40px; height: 4px; background: var(--gray-300); border-radius: var(--radius-full); margin: 0 auto var(--space-6);"></div>
+      <h3 style="margin-bottom: var(--space-4);">Add New Asset</h3>
+      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-3);">
+        <a href="{% url 'index' %}" class="btn btn-secondary" style="flex-direction: column; padding: var(--space-4);">
+          <i class="bi bi-laptop" style="font-size: 1.5rem; margin-bottom: var(--space-2);"></i>
+          Computer
+        </a>
+        <a href="{% url 'scan_monitor' %}" class="btn btn-secondary" style="flex-direction: column; padding: var(--space-4);">
+          <i class="bi bi-display" style="font-size: 1.5rem; margin-bottom: var(--space-2);"></i>
+          Monitor
+        </a>
+        <a href="{% url 'scan_dockingstation' %}" class="btn btn-secondary" style="flex-direction: column; padding: var(--space-4);">
+          <i class="bi bi-hdd-network" style="font-size: 1.5rem; margin-bottom: var(--space-2);"></i>
+          Docking Station
+        </a>
+        <a href="{% url 'add_printer' %}" class="btn btn-secondary" style="flex-direction: column; padding: var(--space-4);">
+          <i class="bi bi-printer" style="font-size: 1.5rem; margin-bottom: var(--space-2);"></i>
+          Printer
+        </a>
       </div>
-    </main>
+      <button class="btn btn-outline w-full mt-4" id="closeAddModal">Cancel</button>
+    </div>
   </div>
-  <script src="{% static '/js/burger.js' %}"></script>
-  <script src="{% static '/js/preline.js' %}"></script>
-  <script> function dropDown() {
-    document.querySelector('#submenu').classList.toggle('hidden')
-    document.querySelector('#arrow').classList.toggle('rotate-180')
-  }
-  dropDown()</script>
-   <script> 
-    addassets = document.querySelector("#addassets"),
-   buttonsdiv = document.querySelector("#buttons-div");
-   addassets.addEventListener("click", () => {
-     if (buttonsdiv.classList.contains('hidden')){
-       buttonsdiv.classList.remove("hidden")
-     }
-     else{
-       buttonsdiv.classList.add("hidden")
-     };
-       
-    
-     });</script>
 
-      </body>
- 
-  
+  <!-- More Options Modal (Mobile) -->
+  <div id="moreModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; align-items: flex-end; justify-content: center;">
+    <div style="background: var(--bg-primary); width: 100%; max-width: 500px; border-radius: var(--radius-xl) var(--radius-xl) 0 0; padding: var(--space-6); animation: slideUp 0.3s ease;">
+      <div style="width: 40px; height: 4px; background: var(--gray-300); border-radius: var(--radius-full); margin: 0 auto var(--space-6);"></div>
+      <h3 style="margin-bottom: var(--space-4);">More Options</h3>
+      <div style="display: flex; flex-direction: column; gap: var(--space-2);">
+        <a href="{% url 'printers_list' %}" class="nav-item">
+          <i class="bi bi-printer"></i>
+          <span>Printers List</span>
+        </a>
+        <a href="{% url 'monitors_list' %}" class="nav-item">
+          <i class="bi bi-display"></i>
+          <span>Monitors List</span>
+        </a>
+        <a href="{% url 'dockingstation_list' %}" class="nav-item">
+          <i class="bi bi-hdd-network"></i>
+          <span>Docking Stations List</span>
+        </a>
+        <hr style="border: none; border-top: 1px solid var(--gray-200); margin: var(--space-2) 0;">
+        <a href="/admin/" class="nav-item">
+          <i class="bi bi-gear"></i>
+          <span>Admin Panel</span>
+        </a>
+        <a href="{% url 'logout' %}" class="nav-item">
+          <i class="bi bi-box-arrow-right"></i>
+          <span>Logout</span>
+        </a>
+      </div>
+      <button class="btn btn-outline w-full mt-4" id="closeMoreModal">Cancel</button>
+    </div>
+  </div>
 
+  <script>
+    // Mobile Menu Toggle
+    const menuToggle = document.getElementById('menuToggle');
+    const menuClose = document.getElementById('menuClose');
+    const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+
+    function openMenu() {
+      mobileMenuOverlay.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeMenu() {
+      mobileMenuOverlay.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    menuToggle.addEventListener('click', openMenu);
+    menuClose.addEventListener('click', closeMenu);
+    mobileMenuOverlay.addEventListener('click', (e) => {
+      if (e.target === mobileMenuOverlay) closeMenu();
+    });
+
+    // Add Asset Modal
+    const addAssetBtn = document.getElementById('addAssetBtn');
+    const addAssetModal = document.getElementById('addAssetModal');
+    const closeAddModal = document.getElementById('closeAddModal');
+
+    addAssetBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      addAssetModal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+    });
+
+    closeAddModal.addEventListener('click', () => {
+      addAssetModal.style.display = 'none';
+      document.body.style.overflow = '';
+    });
+
+    addAssetModal.addEventListener('click', (e) => {
+      if (e.target === addAssetModal) {
+        addAssetModal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+    });
+
+    // More Options Modal
+    const moreBtn = document.getElementById('moreBtn');
+    const moreModal = document.getElementById('moreModal');
+    const closeMoreModal = document.getElementById('closeMoreModal');
+
+    moreBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      moreModal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+    });
+
+    closeMoreModal.addEventListener('click', () => {
+      moreModal.style.display = 'none';
+      document.body.style.overflow = '';
+    });
+
+    moreModal.addEventListener('click', (e) => {
+      if (e.target === moreModal) {
+        moreModal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+    });
+
+    // Highlight Active Navigation Item
+    const currentPath = window.location.pathname;
+    document.querySelectorAll('.nav-item, .bottom-nav-item').forEach(item => {
+      if (item.getAttribute('href') === currentPath) {
+        item.classList.add('active');
+      }
+    });
+
+    // Keyboard navigation
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeMenu();
+        addAssetModal.style.display = 'none';
+        moreModal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+    });
+  </script>
+</body>
 </html>
-
-

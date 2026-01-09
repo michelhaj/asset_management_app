@@ -440,7 +440,7 @@ def update_monitor_view(request, pk):
 
 
 @user_passes_test(is_admin, login_url='/admin/login/')
-def scan_mointor(request):
+def scan_monitor(request):
     """Scan monitor barcode"""
     return render(request, 'scan_monitor.html')
 
@@ -599,7 +599,7 @@ def save_barcode_dockingstation(request):
 
 
 @user_passes_test(is_admin, login_url='/admin/login/')
-def dockingtation_form(request, barcode):
+def dockingstation_form(request, barcode):
     """Docking station form from barcode scan"""
     dockingstation = get_object_or_404(docking_stations, asset_tag=barcode)
     url = reverse('dockingstation_form', kwargs={'barcode': barcode})
