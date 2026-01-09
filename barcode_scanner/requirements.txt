@@ -1,9 +1,47 @@
-asgiref==3.6.0
+# Core Django
 Django==4.2
+asgiref==3.6.0
+sqlparse==0.4.4
+tzdata==2023.3
+
+# Web server
+gunicorn==20.1.0
+
+# Static files
+whitenoise==6.4.0
+
+# Django extensions
 django-browser-reload==1.8.0
 django-extensions==3.2.1
 django-widget-tweaks==1.4.12
-gunicorn==20.1.0
-sqlparse==0.4.4
-tzdata==2023.3
-whitenoise==6.4.0
+
+# REST API
+djangorestframework==3.14.0
+django-filter==23.5
+
+# Database (PostgreSQL for production)
+dj-database-url==2.1.0
+psycopg2-binary==2.9.9
+
+# Caching (Redis for production)
+redis==5.0.1
+
+# QR Code generation
+qrcode[pil]==7.4.2
+Pillow==10.1.0
+
+# Excel/CSV handling for bulk import
+openpyxl==3.1.2
+
+# Testing
+pytest==7.4.3
+pytest-django==4.7.0
+coverage==7.3.2
+
+# Security
+python-dotenv==1.0.0
+
+# Celery for background tasks (optional)
+# celery==5.3.4
+# django-celery-beat==2.5.0
+# django-celery-results==2.5.1

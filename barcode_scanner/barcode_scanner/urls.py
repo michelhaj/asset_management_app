@@ -15,11 +15,14 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path,include
+from django.urls import path, include
 from inventory import urls as myapp_urls
+from inventory import api_urls
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("__reload_/", include("django_browser_reload.urls")),
+    path("__reload__/", include("django_browser_reload.urls")),
+    path('api/', include(api_urls)),  # REST API endpoints
+    path('api-auth/', include('rest_framework.urls')),  # DRF browsable API auth
     path('', include(myapp_urls)),
 ]

@@ -1,0 +1,230 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Dashboard</h1>
+    <p class="text-muted">Asset Management Overview</p>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-primary text-white mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="mb-0">{{ computer_count }}</h2>
+                            <p class="mb-0">Computers</p>
+                        </div>
+                        <i class="bi bi-pc-display fs-1"></i>
+                    </div>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <a class="small text-white stretched-link" href="{% url 'computer_list' %}">View Details</a>
+                    <i class="bi bi-arrow-right text-white"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-success text-white mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="mb-0">{{ printer_count }}</h2>
+                            <p class="mb-0">Printers</p>
+                        </div>
+                        <i class="bi bi-printer fs-1"></i>
+                    </div>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <a class="small text-white stretched-link" href="{% url 'printers_list' %}">View Details</a>
+                    <i class="bi bi-arrow-right text-white"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-warning text-white mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="mb-0">{{ monitor_count }}</h2>
+                            <p class="mb-0">Monitors</p>
+                        </div>
+                        <i class="bi bi-display fs-1"></i>
+                    </div>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <a class="small text-white stretched-link" href="{% url 'monitors_list' %}">View Details</a>
+                    <i class="bi bi-arrow-right text-white"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-info text-white mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="mb-0">{{ docking_station_count }}</h2>
+                            <p class="mb-0">Docking Stations</p>
+                        </div>
+                        <i class="bi bi-hdd-stack fs-1"></i>
+                    </div>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <a class="small text-white stretched-link" href="{% url 'dockingstation_list' %}">View Details</a>
+                    <i class="bi bi-arrow-right text-white"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Row -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Total Assets</h5>
+                </div>
+                <div class="card-body text-center">
+                    <h1 class="display-4">{{ total_assets }}</h1>
+                    <p class="text-muted">All asset types combined</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Pending Assignments</h5>
+                </div>
+                <div class="card-body text-center">
+                    <h1 class="display-4 {% if pending_assignments > 0 %}text-warning{% endif %}">{{ pending_assignments }}</h1>
+                    <p class="text-muted">Awaiting approval</p>
+                    <a href="{% url 'assignment_list' %}" class="btn btn-outline-primary btn-sm">View Assignments</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Warranty Alerts</h5>
+                </div>
+                <div class="card-body text-center">
+                    {% with total_expiring=warranty_expiring.computers|add:warranty_expiring.printers|add:warranty_expiring.monitors|add:warranty_expiring.docking_stations %}
+                    <h1 class="display-4 {% if total_expiring > 0 %}text-danger{% endif %}">{{ total_expiring }}</h1>
+                    {% endwith %}
+                    <p class="text-muted">Expiring within 7 days</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts and Details -->
+    <div class="row mb-4">
+        <!-- Department Breakdown -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Assets by Department</h5>
+                </div>
+                <div class="card-body">
+                    {% if department_counts %}
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Department</th>
+                                <th>Computers</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for dept in department_counts %}
+                            <tr>
+                                <td>{{ dept.department }}</td>
+                                <td>
+                                    <span class="badge bg-primary">{{ dept.count }}</span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <p class="text-muted">No department data available</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Recent Activity</h5>
+                    <a href="{% url 'asset_history' %}" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body">
+                    {% if recent_history %}
+                    <div class="list-group list-group-flush">
+                        {% for history in recent_history %}
+                        <div class="list-group-item px-0">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="badge
+                                        {% if history.action == 'created' %}bg-success
+                                        {% elif history.action == 'updated' %}bg-info
+                                        {% elif history.action == 'deleted' %}bg-danger
+                                        {% else %}bg-secondary{% endif %}">
+                                        {{ history.action }}
+                                    </span>
+                                    <span class="ms-2">{{ history.asset_type }} {{ history.asset_id }}</span>
+                                </div>
+                                <small class="text-muted">{{ history.changed_at|timesince }} ago</small>
+                            </div>
+                            {% if history.changed_by %}
+                            <small class="text-muted">by {{ history.changed_by.username }}</small>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted">No recent activity</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <a href="{% url 'add_computer' %}" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-plus-circle me-2"></i>Add Computer
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'index' %}" class="btn btn-outline-success w-100">
+                                <i class="bi bi-upc-scan me-2"></i>Scan Barcode
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'bulk_import' %}" class="btn btn-outline-info w-100">
+                                <i class="bi bi-upload me-2"></i>Bulk Import
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'create_assignment' %}" class="btn btn-outline-warning w-100">
+                                <i class="bi bi-person-plus me-2"></i>New Assignment
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
