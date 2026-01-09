@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Create Assignment</h1>
+    <p class="text-muted">Assign an asset to a user</p>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="asset_type" class="form-label">Asset Type</label>
+                            <select name="asset_type" id="asset_type" class="form-select" required onchange="updateAssetOptions()">
+                                <option value="">Select asset type...</option>
+                                <option value="Computer">Computer</option>
+                                <option value="Printer">Printer</option>
+                                <option value="Monitor">Monitor</option>
+                                <option value="Docking Station">Docking Station</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="asset_id" class="form-label">Asset</label>
+                            <select name="asset_id" id="asset_id" class="form-select" required>
+                                <option value="">Select asset type first...</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="assigned_to" class="form-label">Assign To</label>
+                            <input type="text" name="assigned_to" id="assigned_to" class="form-control" required
+                                   placeholder="Employee name or ID">
+                        </div>
+                        <div class="mb-3">
+                            <label for="due_date" class="form-label">Due Date (Optional)</label>
+                            <input type="date" name="due_date" id="due_date" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label for="notes" class="form-label">Notes (Optional)</label>
+                            <textarea name="notes" id="notes" class="form-control" rows="3"
+                                      placeholder="Any additional notes..."></textarea>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle me-2"></i>Create Assignment
+                            </button>
+                            <a href="{% url 'assignment_list' %}" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Assignment Workflow</h5>
+                </div>
+                <div class="card-body">
+                    <ol class="mb-0">
+                        <li class="mb-2"><strong>Create:</strong> Fill out this form to create a new assignment request.</li>
+                        <li class="mb-2"><strong>Approve:</strong> An administrator reviews and approves the request.</li>
+                        <li class="mb-2"><strong>Check Out:</strong> The asset is marked as checked out to the user.</li>
+                        <li><strong>Return:</strong> When the user returns the asset, it's marked as returned.</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const assetData = {
+    'Computer': {{ computers|safe }},
+    'Printer': {{ printers|safe }},
+    'Monitor': {{ monitors|safe }},
+    'Docking Station': {{ docking_stations|safe }}
+};
+
+function updateAssetOptions() {
+    const assetType = document.getElementById('asset_type').value;
+    const assetSelect = document.getElementById('asset_id');
+
+    assetSelect.innerHTML = '<option value="">Select an asset...</option>';
+
+    if (assetType && assetData[assetType]) {
+        assetData[assetType].forEach(asset => {
+            const option = document.createElement('option');
+            option.value = asset.id;
+            option.textContent = asset.asset_tag || asset.service_tag || asset.id;
+            assetSelect.appendChild(option);
+        });
+    }
+}
+</script>
+{% endblock %}
