@@ -1,184 +1,207 @@
 {% if messages %}
-<!DOCTYPE html>
-<!-- Coding By CodingNepal - codingnepalweb.com -->
-<html lang="en">
-<head>
+{% for message in messages %}
+<div class="toast {% if message.tags %}{{ message.tags }}{% else %}success{% endif %}" id="toast-{{ forloop.counter }}">
+  <div class="toast-icon">
+    {% if message.tags == 'error' %}
+      <i class="bi bi-x-lg"></i>
+    {% elif message.tags == 'warning' %}
+      <i class="bi bi-exclamation-lg"></i>
+    {% elif message.tags == 'info' %}
+      <i class="bi bi-info-lg"></i>
+    {% else %}
+      <i class="bi bi-check-lg"></i>
+    {% endif %}
+  </div>
+  <div class="toast-content">
+    <div class="toast-title">
+      {% if message.tags == 'error' %}
+        Error
+      {% elif message.tags == 'warning' %}
+        Warning
+      {% elif message.tags == 'info' %}
+        Info
+      {% else %}
+        Success
+      {% endif %}
+    </div>
+    <div class="toast-message">{{ message }}</div>
+  </div>
+  <button class="toast-close" onclick="closeToast('toast-{{ forloop.counter }}')">
+    <i class="bi bi-x"></i>
+  </button>
+  <div class="toast-progress"></div>
+</div>
+{% endfor %}
 
-    <!-- ====== Fontawesome CDN Link ====== -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
+<script>
+  function closeToast(id) {
+    const toast = document.getElementById(id);
+    if (toast) {
+      toast.style.animation = 'slideOut 0.3s ease forwards';
+      setTimeout(() => {
+        toast.remove();
+      }, 300);
+    }
+  }
 
-    <!-- ====== CSS ====== -->
-    <style>
-/* Google Font Import - Poppins */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-*{
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Poppins', sans-serif;
-}
+  // Auto-dismiss toasts after 5 seconds
+  document.addEventListener('DOMContentLoaded', function() {
+    const toasts = document.querySelectorAll('.toast');
+    toasts.forEach((toast, index) => {
+      setTimeout(() => {
+        if (toast && document.body.contains(toast)) {
+          toast.style.animation = 'slideOut 0.3s ease forwards';
+          setTimeout(() => {
+            toast.remove();
+          }, 300);
+        }
+      }, 5000 + (index * 500));
+    });
+  });
+</script>
 
-
-.toast{
-    position: absolute;
-    top: 25px;
-    right: 30px;
-    border-radius: 12px;
-    background: #fff;
-    padding: 20px 35px 20px 25px;
-    box-shadow: 0 5px 10px rgba(0,0,0,0.1);
-    border-left: 6px solid #4070f4;
-    overflow: hidden;
-    transform: translateX(calc(100% + 30px));
-    transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.35);
-}
-
-.toast.active{
-    transform: translateX(0%);
-}
-
-.toast .toast-content{
+<style>
+  .toast-container {
+    position: fixed;
+    top: 80px;
+    right: var(--space-4);
+    z-index: 9999;
     display: flex;
-    align-items: center;
-}
+    flex-direction: column;
+    gap: var(--space-3);
+    max-width: calc(100% - var(--space-8));
+    pointer-events: none;
+  }
 
-.toast-content .check{
+  @media (min-width: 640px) {
+    .toast-container {
+      max-width: 400px;
+      top: var(--space-4);
+    }
+  }
+
+  .toast {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    background: var(--bg-primary);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xl);
+    animation: slideIn 0.3s ease;
+    border-left: 4px solid var(--success);
+    position: relative;
+    overflow: hidden;
+    pointer-events: auto;
+  }
+
+  .toast.success {
+    border-left-color: var(--success);
+  }
+
+  .toast.warning {
+    border-left-color: var(--warning);
+  }
+
+  .toast.error {
+    border-left-color: var(--error);
+  }
+
+  .toast.info {
+    border-left-color: var(--info);
+  }
+
+  @keyframes slideIn {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideOut {
+    from {
+      transform: translateX(0);
+      opacity: 1;
+    }
+    to {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+  }
+
+  .toast-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-full);
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 35px;
-    width: 35px;
-    background-color: #4070f4;
-    color: #fff;
-    font-size: 20px;
-    border-radius: 50%;
-}
+    flex-shrink: 0;
+    background: var(--success);
+    color: white;
+    font-size: 0.875rem;
+  }
 
-.toast-content .message{
-    display: flex;
-    flex-direction: column;
-    margin: 0 20px;
-}
+  .toast.success .toast-icon { background: var(--success); }
+  .toast.warning .toast-icon { background: var(--warning); }
+  .toast.error .toast-icon { background: var(--error); }
+  .toast.info .toast-icon { background: var(--info); }
 
-.message .text{
-    font-size: 20px;
-    font-weight: 400;;
-    color: #666666;
-}
+  .toast-content {
+    flex: 1;
+    min-width: 0;
+  }
 
-.message .text.text-1{
+  .toast-title {
     font-weight: 600;
-    color: #333;
-}
+    font-size: 0.875rem;
+    color: var(--gray-900);
+    margin-bottom: 2px;
+  }
 
-.toast .close{
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    padding: 5px;
+  .toast-message {
+    font-size: 0.875rem;
+    color: var(--gray-600);
+    word-wrap: break-word;
+  }
+
+  .toast-close {
+    background: none;
+    border: none;
+    color: var(--gray-400);
     cursor: pointer;
-    opacity: 0.7;
-}
+    padding: var(--space-1);
+    border-radius: var(--radius);
+    transition: all var(--transition);
+    flex-shrink: 0;
+  }
 
-.toast .close:hover{
-    opacity: 1;
-}
+  .toast-close:hover {
+    background: var(--gray-100);
+    color: var(--gray-600);
+  }
 
-.toast .progress{
+  .toast-progress {
     position: absolute;
     bottom: 0;
     left: 0;
     height: 3px;
-    width: 100%;
-    background: #ddd;
-}
-
-.toast .progress:before{
-    content: '';
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    height: 100%;
-    width: 100%;
-    background-color: #4070f4;
-}
-
-.progress.active:before{
+    background: var(--success);
     animation: progress 5s linear forwards;
-}
+  }
 
-@keyframes progress {
-    100%{
-        right: 100%;
-    }
-}
+  .toast.success .toast-progress { background: var(--success); }
+  .toast.warning .toast-progress { background: var(--warning); }
+  .toast.error .toast-progress { background: var(--error); }
+  .toast.info .toast-progress { background: var(--info); }
 
-
-
-.toast.active ~ button{
-    pointer-events: none;
-}
-    </style>
-
-</head>
-{% for message in messages %}
-
-<body>
-
-    <div class="toast active">
-        <div class="toast-content">
-            <i class="fas fa-solid fa-check check"></i>
-
-            <div class="message">
-                <span class="text text-1">{% if message.tags %} {{ message.tags }} {% endif %}</span>
-                <span class="text text-2">{{ message }}</span>
-            </div>
-        </div>
-        <i class="fa-solid fa-xmark close"></i>
-
-        <div class="progress active"></div>
-    </div>
-
-    
-
-     <script> const button = document.querySelector("button"),
-        toast = document.querySelector(".toast")
-        closeIcon = document.querySelector(".close"),
-        progress = document.querySelector(".progress");
-  
-        let timer1, timer2;
-  
-        function monitorActiveClass(selector) {
-    setInterval(function() {
-    var element = document.querySelector(selector);
-    if (element.classList.contains("active")) {
-        timer1 = setTimeout(() => {
-              toast.classList.remove("active");
-          }, 5000); //1s = 1000 milliseconds
-  
-          timer2 = setTimeout(() => {
-            progress.classList.remove("active");
-          }, 5300);
-    }
-  }, 1000); // Check every second
-}
-monitorActiveClass = monitorActiveClass(".toast");
-         
-       
-       
-        closeIcon.addEventListener("click", () => {
-          toast.classList.remove("active");
-          
-          setTimeout(() => {
-            progress.classList.remove("active");
-          }, 300);
-  
-          clearTimeout(timer1);
-          clearTimeout(timer2);
-        });</script>
-</body>
-{% endfor %}
+  @keyframes progress {
+    from { width: 100%; }
+    to { width: 0%; }
+  }
+</style>
 {% endif %}
-</html>
-
-

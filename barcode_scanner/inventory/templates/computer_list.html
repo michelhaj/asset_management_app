@@ -1,258 +1,401 @@
 {% extends 'base.html' %}
-{%load static%}
+{% load static %}
+
+{% block title %}Computers - Asset Management{% endblock %}
 
 {% block header %}
+<!-- Font Awesome for export icons -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
-  <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
-  <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
-  <script src="https://cdn.datatables.net/buttons/2.3.6/js/dataTables.buttons.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
-  <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.html5.min.js"></script>
-  <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.colVis.min.js"></script>
-  
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/2.3.6/css/buttons.dataTables.min.css">
-  
- 
-   <style>
-          
-           div.dt-button-collection button.dt-button:active:not(.disabled),
-            div.dt-button-collection button.dt-button.active:not(.disabled), 
-            div.dt-button-collection div.dt-button:active:not(.disabled), 
-            div.dt-button-collection div.dt-button.active:not(.disabled),
-             div.dt-button-collection a.dt-button:active:not(.disabled), 
-             div.dt-button-collection a.dt-button.active:not(.disabled) {
-              
-              background:#0d98ba;box-shadow: inset 1px 1px 3px #666;}
 
-              div.dt-button-collection button.dt-button:active:not(.disabled):hover,
-              div.dt-button-collection button.dt-button.active:not(.disabled):hover, 
-              div.dt-button-collection div.dt-button:active:not(.disabled):hover, 
-              div.dt-button-collection div.dt-button.active:not(.disabled):hover,
-               div.dt-button-collection a.dt-button:active:not(.disabled):hover, 
-               div.dt-button-collection a.dt-button.active:not(.disabled):hover {
-                background:#0d98ba;box-shadow: inset 1px 1px 3px #666;
-                font-weight:600;
-               }
-             
+<!-- DataTables CSS & JS -->
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/2.3.6/css/buttons.dataTables.min.css">
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/2.4.1/css/responsive.dataTables.min.css">
 
-           table.dataTable thead th {
-            background-color: #0d98ba;
-            border-color: #0d98ba;
-            
-          }
-          
-          table.dataTable tfoot th {
-            background-color: #0d98ba;
-            border-color: #0d98ba;
-           
-          }
-          
-          button.buttons-copy, div.buttons-copy, a.buttons-copy, input.buttons-copy, 
-          button.buttons-excel, div.buttons-excel, a.buttons-excel, input.buttons-excel,
-          button.buttons-pdf, div.buttons-pdf, a.buttons-pdf,input.buttons-pdf,
-          button.buttons-csv, div.buttons-csv, a.buttons-csv,input.buttons-csv,
-          button.buttons-colvis, div.buttons-colvis, a.buttons-colvis, input.buttons-colvis{background:#0d98ba;} 
+<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.3.6/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.4.1/js/dataTables.responsive.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.colVis.min.js"></script>
 
+<style>
+  /* DataTables Custom Styling */
+  .dataTables_wrapper {
+    font-family: var(--font-sans);
+  }
 
-          /* Copy button icon */
-.buttons-copy span {
-  display: none; /* hide the text content */
-}
+  table.dataTable thead th {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 12px 8px;
+  }
 
-.buttons-copy:before {
-  content: "\f0c5"; /* Font Awesome icon code */
-  font-family: "Font Awesome 5 Free"; /* Font Awesome font family */
-  font-weight: 900; /* Font weight for solid icons */
-  font-size: 1em; /* Icon size */
-  margin-right: 5px; /* Add some space between the icon and text */
-}
+  table.dataTable tbody td {
+    font-size: 0.875rem;
+    padding: 12px 8px;
+    vertical-align: middle;
+  }
 
-/* Excel button icon */
-.buttons-excel span {
-  display: none; /* hide the text content */
-}
+  table.dataTable tbody tr:hover {
+    background: var(--gray-50) !important;
+  }
 
-.buttons-excel:before {
-  content: "\f1c3"; /* Font Awesome icon code */
-  font-family: "Font Awesome 5 Free"; /* Font Awesome font family */
-  font-weight: 900; /* Font weight for solid icons */
-  font-size: 1em; /* Icon size */
-  margin-right: 5px; /* Add some space between the icon and text */
-}
+  .dataTables_filter input {
+    padding: 8px 12px;
+    border: 2px solid var(--gray-200);
+    border-radius: var(--radius);
+    font-size: 0.875rem;
+    transition: all var(--transition);
+  }
 
-/* PDF button icon */
-.buttons-pdf span {
-  display: none; /* hide the text content */
-}
+  .dataTables_filter input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  }
 
-.buttons-pdf:before {
-  content: "\f1c1"; /* Font Awesome icon code */
-  font-family: "Font Awesome 5 Free"; /* Font Awesome font family */
-  font-weight: 900; /* Font weight for solid icons */
-  font-size: 1em; /* Icon size */
-  margin-right: 5px; /* Add some space between the icon and text */
-}
-/* csv button icon */
-.buttons-csv span {
-  display: none; /* hide the text content */
-}
+  .dataTables_length select {
+    padding: 8px 32px 8px 12px;
+    border: 2px solid var(--gray-200);
+    border-radius: var(--radius);
+    font-size: 0.875rem;
+  }
 
-.buttons-csv:before {
-  content: "\f6dd"; /* Font Awesome icon code */
-  font-family: "Font Awesome 5 Free"; /* Font Awesome font family */
-  font-weight: 900; /* Font weight for solid icons */
-  font-size: 1em; /* Icon size */
-  margin-right: 5px; /* Add some space between the icon and text */
-}
+  .dt-buttons .dt-button {
+    background: var(--primary) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: var(--radius) !important;
+    padding: 8px 16px !important;
+    font-weight: 500 !important;
+    transition: all var(--transition);
+    margin-right: 8px !important;
+  }
 
+  .dt-buttons .dt-button:hover {
+    background: var(--primary-dark) !important;
+    transform: translateY(-1px);
+  }
 
+  .dataTables_paginate .paginate_button {
+    padding: 6px 12px !important;
+    margin: 0 2px !important;
+    border-radius: var(--radius) !important;
+    border: 1px solid var(--gray-200) !important;
+    background: white !important;
+  }
 
-/* Column visibility button icon */
-.buttons-colvis span:first-child {
-  display: none; /* hide the "Column visibility" text */
-}
+  .dataTables_paginate .paginate_button.current {
+    background: var(--primary) !important;
+    color: white !important;
+    border-color: var(--primary) !important;
+  }
 
-.buttons-colvis:before {
-  content: "\f070"; /* Font Awesome icon code */
-  font-family: "Font Awesome 5 Free"; /* Font Awesome font family */
-  font-weight: 900; /* Font weight for solid icons */
-  font-size: 1em; /* Icon size */
-  margin-right: 5px; /* Add some space between the icon and text */
-}
-/* Adjust the table's font size and line height for mobile devices */
+  .dataTables_paginate .paginate_button:hover:not(.current) {
+    background: var(--gray-100) !important;
+    border-color: var(--gray-300) !important;
+  }
 
+  .dataTables_info {
+    font-size: 0.875rem;
+    color: var(--gray-600);
+  }
 
+  /* Export button icons */
+  .buttons-copy::before { content: "\f0c5"; font-family: "Font Awesome 5 Free"; font-weight: 900; margin-right: 6px; }
+  .buttons-excel::before { content: "\f1c3"; font-family: "Font Awesome 5 Free"; font-weight: 900; margin-right: 6px; }
+  .buttons-pdf::before { content: "\f1c1"; font-family: "Font Awesome 5 Free"; font-weight: 900; margin-right: 6px; }
+  .buttons-csv::before { content: "\f6dd"; font-family: "Font Awesome 5 Free"; font-weight: 900; margin-right: 6px; }
+  .buttons-colvis::before { content: "\f06e"; font-family: "Font Awesome 5 Free"; font-weight: 900; margin-right: 6px; }
 
+  /* Mobile Card View */
+  .mobile-card-list {
+    display: none;
+  }
 
-  </style> 
-  {% endblock header%}
-  {% block content %}
+  @media (max-width: 1023px) {
+    .desktop-table-view {
+      display: none;
+    }
 
+    .mobile-card-list {
+      display: block;
+    }
+  }
 
- <div class="grid grid-cols-1">
- 
-  <h2 class="text-lg font-bold text-center md:text-2xl">Computers List</h2>
-  <div class="flex">
-  <a class="text-md md:text-lg" id="ascancomputer" href="{% url "index"%}"><button class="text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300
-     dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center mr-2 mb-2"id="scancomputer">Scan Computer</button></a>
-  <a class="text-md md:text-lg" id="addmonitor" href="{% url "scan_monitor"%}"><button class="text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 
-    hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center mr-2 mb-2" id="addmonitors">Scan Monitors</button></a>
+  .mobile-asset-card {
+    background: var(--bg-primary);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--gray-200);
+    margin-bottom: var(--space-4);
+    overflow: hidden;
+    transition: all var(--transition);
+  }
+
+  .mobile-asset-card:active {
+    transform: scale(0.98);
+  }
+
+  .mobile-asset-header {
+    padding: var(--space-4);
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .mobile-asset-body {
+    padding: var(--space-4);
+  }
+
+  .mobile-asset-row {
+    display: flex;
+    justify-content: space-between;
+    padding: var(--space-2) 0;
+    border-bottom: 1px solid var(--gray-100);
+    font-size: 0.875rem;
+  }
+
+  .mobile-asset-row:last-child {
+    border-bottom: none;
+  }
+
+  .mobile-asset-label {
+    color: var(--gray-500);
+    font-weight: 500;
+  }
+
+  .mobile-asset-value {
+    color: var(--gray-800);
+    font-weight: 600;
+    text-align: right;
+  }
+
+  .mobile-asset-footer {
+    padding: var(--space-3) var(--space-4);
+    background: var(--gray-50);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+</style>
+{% endblock header %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Computers</h1>
+    <p class="text-gray-500 text-sm">View and manage all computer assets</p>
   </div>
-  <div class="rounded shadow p-2 bg-white cardd overflow-x-auto ">
-      <table id="example" class="display table-auto whitespace-nowrap border-spacing-0">
-    
-        
-    <thead>
-      <tr>
-        <th class="text-md">id</th>
-        <th class="text-md">Asset Tag</th>
-        <th class="text-md">Service Tag</th>
-        <th class="text-md">Computer Name</th>
-        <th class="text-md">Department</th>
-        <th class="text-md">User</th>
-        <th class="text-md">Make</th>
-        <th class="text-md">Model</th>
-        <th class="text-md">Storage</th>
-        <th class="text-md">CPU</th>
-        <th class="text-md">RAM</th>
-        <!-- <th class="text-md">Monitor</th>
-        <th class="text-md">Docking Station</th>
-        <th class="text-md">Printer</th> -->
-        <th class="text-md">Monitors</th>
-        <th class="text-md">printers</th>
-        <th class="text-md">Docking Stations</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for item in computer_items %}
-     
-        <tr>
-          <td><a class="btn btn-sm btn-info" href="{% url 'computers_form' item.id %}" ><button  class="border-2 text-xs px-3 py-1 bg-blue-500 text-white border rounded-md">{{ item.id }} </button></a> </td>
-          <td>{{ item.asset_tag }}</td>
-          <td>{{ item.service_tag }}</td>
-          <td>{{ item.computer_name }}</td>
-          <td>{{ item.department }}</td>
-          <td>{{ item.user }}</td>
-          <td>{{ item.make }}</td>
-          <td>{{ item.model }}</td>
-          <td>{{ item.storage }}</td>
-          <td>{{ item.cpu }}</td>
-          <td>{{ item.ram }}</td>
-          <!-- <td>{{ item.monitor }}</td>
-          <td>{{ item.docking_station }}</td>
-          <td>{{ item.printer }}</td> -->
-           <td>
-            {% if item.monitors.all %}
-        {% for monitor in item.monitors.all %}
-        <a class="btn btn-sm btn-info" href="{% url 'monitors_page' monitor.id %}" ><button  class="border-2 text-xs px-3 py-1 bg-yellow-400 border rounded-md">{{ monitor }}</button></a> 
-        {% endfor %}
-        {% else %}
-              No monitors found for this computer.
-        {% endif %}
-        
-    </td> 
-    <td>
-          {% if item.printers.all %}
-              {% for printer in item.printers.all %}
-              <a class="btn btn-sm btn-info" href="{% url 'printers_page' printer.id %}" ><button  class="border-2 text-xxs px-3 py-1 bg-primary border rounded-md">{{ printer.description }} </button></a> 
-              {% endfor %}
-        {% else %}
-              No Printers found for this computer.
-        {% endif %}
-            
-    </td> 
-    <td>
-      {% if item.docking_stations.all %}
-          {% for dockingstation in item.docking_stations.all %}
-          <a class="btn btn-sm btn-info" href="{% url 'dockingstation_page' dockingstation.id %}" ><button  class="border-2 text-xxs px-3 py-1 bg-red-500 border rounded-md">{{ dockingstation }} </button></a> 
+  <div class="page-actions">
+    <a href="{% url 'index' %}" class="btn btn-primary">
+      <i class="bi bi-upc-scan"></i>
+      <span class="hide-mobile">Scan Computer</span>
+    </a>
+    <a href="{% url 'scan_monitor' %}" class="btn btn-secondary hide-mobile">
+      <i class="bi bi-display"></i>
+      Scan Monitor
+    </a>
+  </div>
+</div>
+
+<!-- Mobile Search -->
+<div class="hide-desktop mb-4">
+  <div class="search-container" style="max-width: 100%;">
+    <i class="bi bi-search search-icon"></i>
+    <input type="text" class="search-input" id="mobileSearch" placeholder="Search computers..." style="padding-left: 2.5rem;">
+  </div>
+</div>
+
+<!-- Mobile Card View -->
+<div class="mobile-card-list" id="mobileCardList">
+  {% for item in computer_items %}
+  <a href="{% url 'computers_form' item.id %}" style="text-decoration: none; color: inherit;">
+    <div class="mobile-asset-card">
+      <div class="mobile-asset-header">
+        <div>
+          <div style="font-size: 0.75rem; opacity: 0.9;">{{ item.asset_tag }}</div>
+          <div style="font-weight: 700;">{{ item.service_tag|default:"No Service Tag" }}</div>
+        </div>
+        <i class="bi bi-chevron-right"></i>
+      </div>
+      <div class="mobile-asset-body">
+        <div class="mobile-asset-row">
+          <span class="mobile-asset-label">Computer Name</span>
+          <span class="mobile-asset-value">{{ item.computer_name|default:"Not Set" }}</span>
+        </div>
+        <div class="mobile-asset-row">
+          <span class="mobile-asset-label">User</span>
+          <span class="mobile-asset-value">{{ item.user|default:"Unassigned" }}</span>
+        </div>
+        <div class="mobile-asset-row">
+          <span class="mobile-asset-label">Department</span>
+          <span class="mobile-asset-value">{{ item.department|default:"N/A" }}</span>
+        </div>
+        <div class="mobile-asset-row">
+          <span class="mobile-asset-label">Make / Model</span>
+          <span class="mobile-asset-value">{{ item.make }} {{ item.model }}</span>
+        </div>
+        <div class="mobile-asset-row">
+          <span class="mobile-asset-label">Specs</span>
+          <span class="mobile-asset-value" style="font-size: 0.75rem;">{{ item.storage }} / {{ item.ram }} / {{ item.cpu }}</span>
+        </div>
+      </div>
+      <div class="mobile-asset-footer">
+        {% if item.monitors.all %}
+          {% for monitor in item.monitors.all %}
+            <span class="tag tag-primary"><i class="bi bi-display"></i> {{ monitor }}</span>
           {% endfor %}
-    {% else %}
-          No Docking Staions found for this computer.
-    {% endif %}
-        
-</td> 
-          
-       
-    {% endfor %}
-    </tbody>
-    <tfoot>
-      <tr>
-        <th class="text-md">id</th>
-        <th class="text-md">Asset Tag</th>
-        <th class="text-md">Service Tag</th>
-        <th class="text-md">Computer Name</th>
-        <th class="text-md">Department</th>
-        <th class="text-md">User</th>
-        <th class="text-md">Make</th>
-        <th class="text-md">Model</th>
-        <th class="text-md">Storage</th>
-        <th class="text-md">CPU</th>
-        <th class="text-md">RAM</th>
-        <!-- <th class="text-md">Monitor</th>
-        <th class="text-md">Docking Station</th>
-        <th class="text-md">Printer</th> -->
-        <th class="text-md">Monitors</th>
-        <th class="text-md">printers</th>
-        <th class="text-md">Docking Stations</th>
-      </tr>
-  </tfoot>
-  </table>
-</div> 
-</div> 
+        {% endif %}
+        {% if item.printers.all %}
+          {% for printer in item.printers.all %}
+            <span class="tag tag-info"><i class="bi bi-printer"></i> {{ printer.description|truncatechars:10 }}</span>
+          {% endfor %}
+        {% endif %}
+        {% if item.docking_stations.all %}
+          {% for dock in item.docking_stations.all %}
+            <span class="tag tag-success"><i class="bi bi-hdd-network"></i> {{ dock }}</span>
+          {% endfor %}
+        {% endif %}
+      </div>
+    </div>
+  </a>
+  {% empty %}
+  <div class="empty-state">
+    <div class="empty-state-icon">
+      <i class="bi bi-laptop"></i>
+    </div>
+    <h3 class="empty-state-title">No Computers Found</h3>
+    <p class="empty-state-text">Add your first computer by scanning a barcode.</p>
+    <a href="{% url 'index' %}" class="btn btn-primary">
+      <i class="bi bi-plus-lg"></i>
+      Add Computer
+    </a>
+  </div>
+  {% endfor %}
+</div>
 
+<!-- Desktop Table View -->
+<div class="desktop-table-view">
+  <div class="card">
+    <div class="card-body" style="overflow-x: auto;">
+      <table id="computersTable" class="display" style="width: 100%;">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Asset Tag</th>
+            <th>Service Tag</th>
+            <th>Computer Name</th>
+            <th>Department</th>
+            <th>User</th>
+            <th>Make</th>
+            <th>Model</th>
+            <th>Storage</th>
+            <th>CPU</th>
+            <th>RAM</th>
+            <th>Monitors</th>
+            <th>Printers</th>
+            <th>Docking Stations</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in computer_items %}
+          <tr>
+            <td>
+              <a href="{% url 'computers_form' item.id %}" class="btn btn-primary btn-sm">
+                {{ item.id }}
+              </a>
+            </td>
+            <td>{{ item.asset_tag }}</td>
+            <td><strong>{{ item.service_tag }}</strong></td>
+            <td>{{ item.computer_name }}</td>
+            <td>{{ item.department }}</td>
+            <td>{{ item.user }}</td>
+            <td>{{ item.make }}</td>
+            <td>{{ item.model }}</td>
+            <td>{{ item.storage }}</td>
+            <td>{{ item.cpu }}</td>
+            <td>{{ item.ram }}</td>
+            <td>
+              {% if item.monitors.all %}
+                {% for monitor in item.monitors.all %}
+                  <a href="{% url 'monitors_page' monitor.id %}" class="tag tag-primary">{{ monitor }}</a>
+                {% endfor %}
+              {% else %}
+                <span class="text-gray-400">-</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if item.printers.all %}
+                {% for printer in item.printers.all %}
+                  <a href="{% url 'printers_page' printer.id %}" class="tag tag-info">{{ printer.description|truncatechars:15 }}</a>
+                {% endfor %}
+              {% else %}
+                <span class="text-gray-400">-</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if item.docking_stations.all %}
+                {% for dock in item.docking_stations.all %}
+                  <a href="{% url 'dockingstation_page' dock.id %}" class="tag tag-success">{{ dock }}</a>
+                {% endfor %}
+              {% else %}
+                <span class="text-gray-400">-</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
 
+<script>
+$(document).ready(function() {
+  // Initialize DataTable
+  $('#computersTable').DataTable({
+    responsive: true,
+    dom: 'Bfrtip',
+    buttons: [
+      { extend: 'copy', text: 'Copy' },
+      { extend: 'excel', text: 'Excel' },
+      { extend: 'pdf', text: 'PDF' },
+      { extend: 'csv', text: 'CSV' },
+      { extend: 'colvis', text: 'Columns' }
+    ],
+    pageLength: 25,
+    order: [[0, 'desc']],
+    language: {
+      search: "Search:",
+      lengthMenu: "Show _MENU_ entries",
+      info: "Showing _START_ to _END_ of _TOTAL_ computers",
+      paginate: {
+        first: "First",
+        last: "Last",
+        next: "Next",
+        previous: "Previous"
+      }
+    }
+  });
 
-	
-
-
-<script src="{% static '/js/datatable.js' %}"></script>
-
+  // Mobile Search
+  $('#mobileSearch').on('input', function() {
+    const searchTerm = this.value.toLowerCase();
+    $('.mobile-asset-card').each(function() {
+      const text = $(this).text().toLowerCase();
+      $(this).parent().toggle(text.includes(searchTerm));
+    });
+  });
+});
+</script>
 {% endblock content %}
-
-
-
-
-
