@@ -1,48 +1,89 @@
 {% extends 'base.html' %}
-{%load widget_tweaks%}
+{% load widget_tweaks %}
+
+{% block title %}{% if printers %}Edit Printer{% else %}Add Printer{% endif %} - Asset Management{% endblock %}
+
 {% block content %}
-<div>
-<div class="grid grid-cols-1 gap-3 md:grid-cols-3">
-  
-    <div class="bg-gray-200 rounded-lg col-span-2">
-      <h2 class="m-5 pt-5 font-bold text-xl">Printer Details</h2>
+<div class="page-header">
+  <div>
+    <nav style="font-size: 0.875rem; color: var(--gray-500); margin-bottom: var(--space-2);">
+      <a href="{% url 'home' %}" style="color: var(--primary); text-decoration: none;">Dashboard</a>
+      <i class="bi bi-chevron-right" style="margin: 0 8px;"></i>
+      <a href="{% url 'printers_list' %}" style="color: var(--primary); text-decoration: none;">Printers</a>
+      <i class="bi bi-chevron-right" style="margin: 0 8px;"></i>
+      <span>{% if printers %}{{ printers.service_tag }}{% else %}New Printer{% endif %}</span>
+    </nav>
+    <h1 class="page-title">{% if printers %}Edit Printer{% else %}Add New Printer{% endif %}</h1>
+  </div>
+</div>
 
-      <form class="m-5" method="post" {% if url %}action="{{ url }}"{%endif%}>
-        {% csrf_token %}
-
-        <div class="grid grid-cols-1 md:grid-cols-2">
-          {% for item in form %}
-
-          <div class="flex-col justify-center font-semibold">
-            <div>{%render_field item.label %}</div>
-
-            <div>{%render_field item class+="form-input border-orange-500 border-2"%}</div>
-          </div>
-          {%endfor%}
+<div style="display: grid; grid-template-columns: 1fr; gap: var(--space-6);">
+  <div class="card">
+    <div class="card-header">
+      <div style="display: flex; align-items: center; gap: var(--space-3);">
+        <div style="width: 40px; height: 40px; border-radius: var(--radius); background: linear-gradient(135deg, var(--info), #0284c7); display: flex; align-items: center; justify-content: center; color: white;">
+          <i class="bi bi-printer"></i>
         </div>
-        <div class="flex mt-10 gap-4">
-
-        <div class="pb-10"><span class="orang-btn"><button type="submit"> Save </button></span></div>
-        <div class="pb-10 "><a href="{% url 'delete_printer' printers.id %}"><span class="orang-btn" > delete </span></a></div>
-
-        </div>
-      </form>
+        <h3 class="card-title">Printer Details</h3>
+      </div>
+      {% if printers %}
+      <a href="{% url 'delete_printer' printers.id %}" class="btn btn-error btn-sm" onclick="return confirm('Delete this printer?');">
+        <i class="bi bi-trash"></i> Delete
+      </a>
+      {% endif %}
     </div>
 
-    <div class="  bg-gray-200 rounded-lg col-span-1">
-      <h2 class="m-5 pt-5 font-bold text-xl">Computers Details</h2>
-      <div class="m-5 grid grid-cols-1 md:grid-cols-2">
-        {% if printers.Computers.all %}
-        {% for computer in printers.Computers.all %}
-        <a href="{% url 'computers_form' computer.id %}"><button
-            class="border-2 text-xxs px-3 py-1 bg-yellow-400 rounded-md">{{ computer }} </button></a>
-        {% endfor %}
-        {% else %}
-        No Computers found for this printer.
-        {% endif %}
+    <form method="post" {% if url %}action="{{ url }}"{% endif %}>
+      {% csrf_token %}
+      <div class="card-body">
+        <div style="display: grid; grid-template-columns: repeat(1, 1fr); gap: var(--space-4);">
+          {% for item in form %}
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">{{ item.label }}</label>
+            {% render_field item class="form-input" placeholder=item.label %}
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="card-footer" style="display: flex; flex-wrap: wrap; gap: var(--space-3); justify-content: space-between;">
+        <a href="{% url 'printers_list' %}" class="btn btn-secondary">
+          <i class="bi bi-arrow-left"></i> Back
+        </a>
+        <button type="submit" class="btn btn-primary">
+          <i class="bi bi-check-lg"></i> {% if printers %}Save{% else %}Add Printer{% endif %}
+        </button>
+      </div>
+    </form>
+  </div>
+
+  {% if printers %}
+  <div class="card">
+    <div class="card-header">
+      <div style="display: flex; align-items: center; gap: var(--space-2);">
+        <i class="bi bi-laptop" style="color: var(--primary);"></i>
+        <span class="card-title">Linked Computers</span>
       </div>
     </div>
-</div>
+    <div class="card-body">
+      {% if printers.Computers.all %}
+        <div style="display: flex; flex-wrap: wrap; gap: var(--space-2);">
+        {% for computer in printers.Computers.all %}
+          <a href="{% url 'computers_form' computer.id %}" class="tag tag-warning" style="padding: var(--space-2) var(--space-3);">
+            <i class="bi bi-laptop"></i> {{ computer }}
+          </a>
+        {% endfor %}
+        </div>
+      {% else %}
+        <p style="color: var(--gray-500); text-align: center; padding: var(--space-4);">No computers linked to this printer</p>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
 </div>
 
-  {% endblock %}
+<style>
+  @media (min-width: 768px) {
+    .card-body > div { grid-template-columns: repeat(2, 1fr) !important; }
+  }
+</style>
+{% endblock %}

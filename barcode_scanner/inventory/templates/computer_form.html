@@ -1,30 +1,210 @@
 {% extends 'base.html' %}
-{%load widget_tweaks%}
+{% load widget_tweaks %}
+
+{% block title %}{% if pc %}Edit Computer{% else %}Add Computer{% endif %} - Asset Management{% endblock %}
+
 {% block content %}
-<div>
-<div class="bg-gray-200 rounded-lg m-5 w-full">
-  <h2 class="m-5 pt-5 font-bold text-xl">Computer Details</h2>
-  
-  <form class="m-5" method="post" {% if url %}action="{{ url }}"{%endif%}>
-    {% csrf_token %}
-    
-    <div class="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3 ">
-    {% for item in form %}
-  
-    <div class="flex-col justify-center font-semibold">
-      <div>{%render_field item.label %}</div>
-      
-      <div>{%render_field item class+="form-input border-orange-500 border-2"%}</div>
-      </div>
-    {%endfor%}
+<!-- Page Header -->
+<div class="page-header">
+  <div>
+    <nav style="font-size: 0.875rem; color: var(--gray-500); margin-bottom: var(--space-2);">
+      <a href="{% url 'home' %}" style="color: var(--primary); text-decoration: none;">Dashboard</a>
+      <i class="bi bi-chevron-right" style="margin: 0 8px;"></i>
+      <a href="{% url 'computer_list' %}" style="color: var(--primary); text-decoration: none;">Computers</a>
+      <i class="bi bi-chevron-right" style="margin: 0 8px;"></i>
+      <span>{% if pc %}{{ pc.asset_tag }}{% else %}New Computer{% endif %}</span>
+    </nav>
+    <h1 class="page-title">{% if pc %}Edit Computer{% else %}Add New Computer{% endif %}</h1>
+    <p class="text-gray-500 text-sm">{% if pc %}Update the computer details below{% else %}Enter the computer details below{% endif %}</p>
   </div>
-   <!-- <button   type="submit">Save</button> -->
-   <div class="flex mt-10  gap-4">
-   <div class="pb-10"><span class="orang-btn" ><button   type="submit"> Save </button></span></div>
-   {% if pc %}<div class="pb-10"><a href="{% url 'delete_pc' pc.id %}"><span class="orang-btn" > delete </span></a></div>{% endif %}
-  </div>
-  </form>
-</div>
 </div>
 
+<div class="card">
+  <div class="card-header">
+    <div style="display: flex; align-items: center; gap: var(--space-3);">
+      <div style="width: 40px; height: 40px; border-radius: var(--radius); background: linear-gradient(135deg, var(--primary), var(--secondary)); display: flex; align-items: center; justify-content: center; color: white;">
+        <i class="bi bi-laptop"></i>
+      </div>
+      <div>
+        <h3 class="card-title">Computer Details</h3>
+        <p style="font-size: 0.75rem; color: var(--gray-500);">{% if pc %}ID: {{ pc.id }}{% else %}Fill in all required fields{% endif %}</p>
+      </div>
+    </div>
+    {% if pc %}
+    <a href="{% url 'delete_pc' pc.id %}" class="btn btn-error btn-sm" onclick="return confirm('Are you sure you want to delete this computer?');">
+      <i class="bi bi-trash"></i>
+      Delete
+    </a>
+    {% endif %}
+  </div>
+
+  <form method="post" {% if url %}action="{{ url }}"{% endif %}>
+    {% csrf_token %}
+    <div class="card-body">
+      <div style="display: grid; grid-template-columns: repeat(1, 1fr); gap: var(--space-4);">
+        {% for field in form %}
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label" for="{{ field.id_for_label }}">
+            {{ field.label }}
+            {% if field.field.required %}<span style="color: var(--error);">*</span>{% endif %}
+          </label>
+          {% if field.field.widget.input_type == 'select' %}
+            {% render_field field class="form-select" %}
+          {% else %}
+            {% render_field field class="form-input" placeholder=field.label %}
+          {% endif %}
+          {% if field.help_text %}
+            <p style="font-size: 0.75rem; color: var(--gray-500); margin-top: var(--space-1);">{{ field.help_text }}</p>
+          {% endif %}
+          {% if field.errors %}
+            <p style="font-size: 0.75rem; color: var(--error); margin-top: var(--space-1);">{{ field.errors.0 }}</p>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="card-footer" style="display: flex; flex-wrap: wrap; gap: var(--space-3); justify-content: space-between;">
+      <a href="{% url 'computer_list' %}" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i>
+        Back to List
+      </a>
+      <div style="display: flex; gap: var(--space-2);">
+        {% if pc %}
+        <a href="{% url 'delete_pc' pc.id %}" class="btn btn-outline hide-mobile" style="border-color: var(--error); color: var(--error);" onclick="return confirm('Are you sure you want to delete this computer?');">
+          <i class="bi bi-trash"></i>
+          Delete
+        </a>
+        {% endif %}
+        <button type="submit" class="btn btn-primary">
+          <i class="bi bi-check-lg"></i>
+          {% if pc %}Save Changes{% else %}Add Computer{% endif %}
+        </button>
+      </div>
+    </div>
+  </form>
+</div>
+
+{% if pc %}
+<!-- Related Assets Section -->
+<div style="margin-top: var(--space-6);">
+  <h3 style="margin-bottom: var(--space-4);">Related Assets</h3>
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-4);">
+    <!-- Monitors -->
+    <div class="card">
+      <div class="card-header">
+        <div style="display: flex; align-items: center; gap: var(--space-2);">
+          <i class="bi bi-display" style="color: var(--primary);"></i>
+          <span class="card-title">Monitors</span>
+        </div>
+      </div>
+      <div class="card-body">
+        {% if pc.monitors.all %}
+          {% for monitor in pc.monitors.all %}
+          <a href="{% url 'monitors_page' monitor.id %}" style="display: flex; align-items: center; justify-content: space-between; padding: var(--space-2); border-radius: var(--radius); background: var(--gray-50); margin-bottom: var(--space-2); text-decoration: none; color: inherit;">
+            <span>{{ monitor }}</span>
+            <i class="bi bi-chevron-right" style="color: var(--gray-400);"></i>
+          </a>
+          {% endfor %}
+        {% else %}
+          <p style="color: var(--gray-500); text-align: center; padding: var(--space-4);">No monitors linked</p>
+        {% endif %}
+      </div>
+      <div class="card-footer">
+        <a href="{% url 'scan_monitor' %}" class="btn btn-outline btn-sm w-full">
+          <i class="bi bi-plus"></i> Add Monitor
+        </a>
+      </div>
+    </div>
+
+    <!-- Printers -->
+    <div class="card">
+      <div class="card-header">
+        <div style="display: flex; align-items: center; gap: var(--space-2);">
+          <i class="bi bi-printer" style="color: var(--info);"></i>
+          <span class="card-title">Printers</span>
+        </div>
+      </div>
+      <div class="card-body">
+        {% if pc.printers.all %}
+          {% for printer in pc.printers.all %}
+          <a href="{% url 'printers_page' printer.id %}" style="display: flex; align-items: center; justify-content: space-between; padding: var(--space-2); border-radius: var(--radius); background: var(--gray-50); margin-bottom: var(--space-2); text-decoration: none; color: inherit;">
+            <span>{{ printer.description }}</span>
+            <i class="bi bi-chevron-right" style="color: var(--gray-400);"></i>
+          </a>
+          {% endfor %}
+        {% else %}
+          <p style="color: var(--gray-500); text-align: center; padding: var(--space-4);">No printers linked</p>
+        {% endif %}
+      </div>
+      <div class="card-footer">
+        <a href="{% url 'add_printer' %}" class="btn btn-outline btn-sm w-full">
+          <i class="bi bi-plus"></i> Add Printer
+        </a>
+      </div>
+    </div>
+
+    <!-- Docking Stations -->
+    <div class="card">
+      <div class="card-header">
+        <div style="display: flex; align-items: center; gap: var(--space-2);">
+          <i class="bi bi-hdd-network" style="color: var(--success);"></i>
+          <span class="card-title">Docking Stations</span>
+        </div>
+      </div>
+      <div class="card-body">
+        {% if pc.docking_stations.all %}
+          {% for dock in pc.docking_stations.all %}
+          <a href="{% url 'dockingstation_page' dock.id %}" style="display: flex; align-items: center; justify-content: space-between; padding: var(--space-2); border-radius: var(--radius); background: var(--gray-50); margin-bottom: var(--space-2); text-decoration: none; color: inherit;">
+            <span>{{ dock }}</span>
+            <i class="bi bi-chevron-right" style="color: var(--gray-400);"></i>
+          </a>
+          {% endfor %}
+        {% else %}
+          <p style="color: var(--gray-500); text-align: center; padding: var(--space-4);">No docking stations linked</p>
+        {% endif %}
+      </div>
+      <div class="card-footer">
+        <a href="{% url 'scan_dockingstation' %}" class="btn btn-outline btn-sm w-full">
+          <i class="bi bi-plus"></i> Add Docking Station
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<style>
+  .form-group {
+    margin-bottom: var(--space-4);
+  }
+
+  .form-input, .form-select {
+    width: 100%;
+    padding: var(--space-3) var(--space-4);
+    font-size: 1rem;
+    border: 2px solid var(--gray-200);
+    border-radius: var(--radius);
+    background: var(--bg-primary);
+    transition: all var(--transition);
+  }
+
+  .form-input:focus, .form-select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  }
+
+  @media (min-width: 768px) {
+    .card-body > div {
+      grid-template-columns: repeat(2, 1fr) !important;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .card-body > div {
+      grid-template-columns: repeat(3, 1fr) !important;
+    }
+  }
+</style>
 {% endblock %}
