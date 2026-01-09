@@ -1,203 +1,231 @@
 {% extends 'base.html' %}
-{%load static%}
+{% load static %}
+
+{% block title %}Monitors - Asset Management{% endblock %}
 
 {% block header %}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
-  <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
-  <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
-  <script src="https://cdn.datatables.net/buttons/2.3.6/js/dataTables.buttons.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
-  <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.html5.min.js"></script>
-  <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.colVis.min.js"></script>
-  
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/2.3.6/css/buttons.dataTables.min.css">
-  
- 
-   <style>
-          
-           div.dt-button-collection button.dt-button:active:not(.disabled),
-            div.dt-button-collection button.dt-button.active:not(.disabled), 
-            div.dt-button-collection div.dt-button:active:not(.disabled), 
-            div.dt-button-collection div.dt-button.active:not(.disabled),
-             div.dt-button-collection a.dt-button:active:not(.disabled), 
-             div.dt-button-collection a.dt-button.active:not(.disabled) {
-              
-              background:#0d98ba;box-shadow: inset 1px 1px 3px #666;}
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/2.3.6/css/buttons.dataTables.min.css">
 
-              div.dt-button-collection button.dt-button:active:not(.disabled):hover,
-              div.dt-button-collection button.dt-button.active:not(.disabled):hover, 
-              div.dt-button-collection div.dt-button:active:not(.disabled):hover, 
-              div.dt-button-collection div.dt-button.active:not(.disabled):hover,
-               div.dt-button-collection a.dt-button:active:not(.disabled):hover, 
-               div.dt-button-collection a.dt-button.active:not(.disabled):hover {
-                background:#0d98ba;box-shadow: inset 1px 1px 3px #666;
-                font-weight:600;
-               }
-             
+<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.3.6/js/dataTables.buttons.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.colVis.min.js"></script>
 
-           table.dataTable thead th {
-            background-color: #0d98ba;
-            border-color: #0d98ba;
-            
-          }
-          
-          table.dataTable tfoot th {
-            background-color: #0d98ba;
-            border-color: #0d98ba;
-           
-          }
-          
-          button.buttons-copy, div.buttons-copy, a.buttons-copy, input.buttons-copy, 
-          button.buttons-excel, div.buttons-excel, a.buttons-excel, input.buttons-excel,
-          button.buttons-pdf, div.buttons-pdf, a.buttons-pdf,input.buttons-pdf,
-          button.buttons-csv, div.buttons-csv, a.buttons-csv,input.buttons-csv,
-          button.buttons-colvis, div.buttons-colvis, a.buttons-colvis, input.buttons-colvis{background:#0d98ba;} 
+<style>
+  table.dataTable thead th {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 12px 8px;
+  }
 
+  table.dataTable tbody td {
+    font-size: 0.875rem;
+    padding: 12px 8px;
+    vertical-align: middle;
+  }
 
-          /* Copy button icon */
-.buttons-copy span {
-  display: none; /* hide the text content */
-}
+  table.dataTable tbody tr:hover {
+    background: var(--gray-50) !important;
+  }
 
-.buttons-copy:before {
-  content: "\f0c5"; /* Font Awesome icon code */
-  font-family: "Font Awesome 5 Free"; /* Font Awesome font family */
-  font-weight: 900; /* Font weight for solid icons */
-  font-size: 1em; /* Icon size */
-  margin-right: 5px; /* Add some space between the icon and text */
-}
+  .dt-buttons .dt-button {
+    background: var(--primary) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: var(--radius) !important;
+    padding: 8px 16px !important;
+    font-weight: 500 !important;
+    margin-right: 8px !important;
+  }
 
-/* Excel button icon */
-.buttons-excel span {
-  display: none; /* hide the text content */
-}
+  .dt-buttons .dt-button:hover {
+    background: var(--primary-dark) !important;
+  }
 
-.buttons-excel:before {
-  content: "\f1c3"; /* Font Awesome icon code */
-  font-family: "Font Awesome 5 Free"; /* Font Awesome font family */
-  font-weight: 900; /* Font weight for solid icons */
-  font-size: 1em; /* Icon size */
-  margin-right: 5px; /* Add some space between the icon and text */
-}
+  .dataTables_filter input {
+    padding: 8px 12px;
+    border: 2px solid var(--gray-200);
+    border-radius: var(--radius);
+  }
 
-/* PDF button icon */
-.buttons-pdf span {
-  display: none; /* hide the text content */
-}
+  .dataTables_paginate .paginate_button.current {
+    background: var(--primary) !important;
+    color: white !important;
+    border-color: var(--primary) !important;
+  }
 
-.buttons-pdf:before {
-  content: "\f1c1"; /* Font Awesome icon code */
-  font-family: "Font Awesome 5 Free"; /* Font Awesome font family */
-  font-weight: 900; /* Font weight for solid icons */
-  font-size: 1em; /* Icon size */
-  margin-right: 5px; /* Add some space between the icon and text */
-}
-/* csv button icon */
-.buttons-csv span {
-  display: none; /* hide the text content */
-}
+  .mobile-card-list { display: none; }
 
-.buttons-csv:before {
-  content: "\f6dd"; /* Font Awesome icon code */
-  font-family: "Font Awesome 5 Free"; /* Font Awesome font family */
-  font-weight: 900; /* Font weight for solid icons */
-  font-size: 1em; /* Icon size */
-  margin-right: 5px; /* Add some space between the icon and text */
-}
+  @media (max-width: 1023px) {
+    .desktop-table-view { display: none; }
+    .mobile-card-list { display: block; }
+  }
 
+  .mobile-asset-card {
+    background: var(--bg-primary);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--gray-200);
+    margin-bottom: var(--space-4);
+    overflow: hidden;
+  }
 
+  .mobile-asset-header {
+    padding: var(--space-4);
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
 
-/* Column visibility button icon */
-.buttons-colvis span:first-child {
-  display: none; /* hide the "Column visibility" text */
-}
+  .mobile-asset-body { padding: var(--space-4); }
 
-.buttons-colvis:before {
-  content: "\f070"; /* Font Awesome icon code */
-  font-family: "Font Awesome 5 Free"; /* Font Awesome font family */
-  font-weight: 900; /* Font weight for solid icons */
-  font-size: 1em; /* Icon size */
-  margin-right: 5px; /* Add some space between the icon and text */
-}
-/* Adjust the table's font size and line height for mobile devices */
+  .mobile-asset-row {
+    display: flex;
+    justify-content: space-between;
+    padding: var(--space-2) 0;
+    border-bottom: 1px solid var(--gray-100);
+    font-size: 0.875rem;
+  }
 
+  .mobile-asset-row:last-child { border-bottom: none; }
 
+  .mobile-asset-footer {
+    padding: var(--space-3) var(--space-4);
+    background: var(--gray-50);
+  }
+</style>
+{% endblock header %}
 
-
-  </style> 
-  {% endblock header%}
-  {% block content %}
-
-
- <div class="grid grid-cols-1">
- 
-  <h2 class="text-lg font-bold text-center md:text-2xl">Monitors List</h2>
-  <div class="flex">
-  <a class="text-md md:text-lg" id="ascancomputer" href="{% url "index"%}"><button class="text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300
-     dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center mr-2 mb-2"id="scancomputer">Scan Computer</button></a>
-  <a class="text-md md:text-lg" id="addmonitor" href="{% url "scan_monitor"%}"><button class="text-white bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 
-    hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-teal-300 dark:focus:ring-teal-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center mr-2 mb-2" id="addmonitors">Scan Monitors</button></a>
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Monitors</h1>
+    <p class="text-gray-500 text-sm">View and manage all monitor assets</p>
   </div>
-  <div class="rounded shadow p-2 bg-white cardd overflow-x-auto ">
-      <table id="example" class="display table-auto whitespace-nowrap border-spacing-0">
-    
-        
-    <thead>
-      <tr>
-        <th class="text-md">id</th>
-        <th class="text-md">Asset Tag</th>
-        <th class="text-md">Service Tag</th>
-        <th class="text-md">Make</th>
-        <th class="text-md">Computers</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for item in monitor_items %}
-     
-        <tr>
-          <td><a class="btn btn-sm btn-info" href="{% url 'monitors_page' item.id %}" ><button  class="border-2 text-xs px-3 py-1 bg-blue-500 text-white border rounded-md">{{ item.id }} </button></a> </td>
-          <td>{{ item.asset_tag }}</td>
-          <td>{{ item.service_tag }}</td>
-          <td>{{ item.make }}</td>
-          <td>
-          {% if item.computer %}
-         
-          <a class="btn btn-sm btn-info" href="{% url 'computers_form' item.computer.id %}" ><button  class="border-2 text-xs px-3 py-1 bg-red-500 border rounded-md">{{ item.computer }} </button></a> 
-        {% else %}
-            No computer found for this monitor.
-        {% endif %}
-        </td>
-       </tr>
-            
-    {% endfor %}
-    </tbody>
-    <tfoot>
-      <tr>
-        <th class="text-md">id</th>
-        <th class="text-md">Asset Tag</th>
-        <th class="text-md">Service Tag</th>
-        <th class="text-md">Make</th>
-        <th class="text-md">Computers</th>
-    
-      </tr>
-  </tfoot>
-  </table>
-</div> 
-</div> 
+  <div class="page-actions">
+    <a href="{% url 'scan_monitor' %}" class="btn btn-primary">
+      <i class="bi bi-upc-scan"></i>
+      Scan Monitor
+    </a>
+  </div>
+</div>
 
+<!-- Mobile Search -->
+<div class="hide-desktop mb-4">
+  <div class="search-container" style="max-width: 100%;">
+    <i class="bi bi-search search-icon"></i>
+    <input type="text" class="search-input" id="mobileSearch" placeholder="Search monitors..." style="padding-left: 2.5rem;">
+  </div>
+</div>
 
+<!-- Mobile Card View -->
+<div class="mobile-card-list">
+  {% for item in monitor_items %}
+  <a href="{% url 'monitors_page' item.id %}" style="text-decoration: none; color: inherit;">
+    <div class="mobile-asset-card">
+      <div class="mobile-asset-header">
+        <div>
+          <div style="font-size: 0.75rem; opacity: 0.9;">{{ item.asset_tag }}</div>
+          <div style="font-weight: 700;">{{ item.service_tag|default:"No Service Tag" }}</div>
+        </div>
+        <i class="bi bi-chevron-right"></i>
+      </div>
+      <div class="mobile-asset-body">
+        <div class="mobile-asset-row">
+          <span style="color: var(--gray-500);">Make</span>
+          <span style="font-weight: 600;">{{ item.make|default:"N/A" }}</span>
+        </div>
+        <div class="mobile-asset-row">
+          <span style="color: var(--gray-500);">Linked Computer</span>
+          <span style="font-weight: 600;">
+            {% if item.computer %}{{ item.computer }}{% else %}Not linked{% endif %}
+          </span>
+        </div>
+      </div>
+      {% if item.computer %}
+      <div class="mobile-asset-footer">
+        <span class="tag tag-success"><i class="bi bi-laptop"></i> {{ item.computer }}</span>
+      </div>
+      {% endif %}
+    </div>
+  </a>
+  {% empty %}
+  <div class="empty-state">
+    <div class="empty-state-icon"><i class="bi bi-display"></i></div>
+    <h3 class="empty-state-title">No Monitors Found</h3>
+    <p class="empty-state-text">Add your first monitor by scanning a barcode.</p>
+    <a href="{% url 'scan_monitor' %}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Add Monitor</a>
+  </div>
+  {% endfor %}
+</div>
 
-	
+<!-- Desktop Table View -->
+<div class="desktop-table-view">
+  <div class="card">
+    <div class="card-body" style="overflow-x: auto;">
+      <table id="monitorsTable" class="display" style="width: 100%;">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Asset Tag</th>
+            <th>Service Tag</th>
+            <th>Make</th>
+            <th>Linked Computer</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in monitor_items %}
+          <tr>
+            <td>
+              <a href="{% url 'monitors_page' item.id %}" class="btn btn-primary btn-sm">{{ item.id }}</a>
+            </td>
+            <td>{{ item.asset_tag }}</td>
+            <td><strong>{{ item.service_tag }}</strong></td>
+            <td>{{ item.make }}</td>
+            <td>
+              {% if item.computer %}
+                <a href="{% url 'computers_form' item.computer.id %}" class="tag tag-success">
+                  <i class="bi bi-laptop"></i> {{ item.computer }}
+                </a>
+              {% else %}
+                <span class="text-gray-400">Not linked</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
 
+<script>
+$(document).ready(function() {
+  $('#monitorsTable').DataTable({
+    responsive: true,
+    dom: 'Bfrtip',
+    buttons: ['copy', 'excel', 'pdf', 'csv', 'colvis'],
+    pageLength: 25,
+    order: [[0, 'desc']]
+  });
 
-<script src="{% static '/js/datatable.js' %}"></script>
-
+  $('#mobileSearch').on('input', function() {
+    const searchTerm = this.value.toLowerCase();
+    $('.mobile-asset-card').each(function() {
+      const text = $(this).text().toLowerCase();
+      $(this).parent().toggle(text.includes(searchTerm));
+    });
+  });
+});
+</script>
 {% endblock content %}
-
-
-
-
-

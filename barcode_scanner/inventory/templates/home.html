@@ -1,97 +1,219 @@
-{% extends 'base.html' %} {% load static %} {% block title %}Inventory
-management system{% endblock %} {% block header %}
-{% comment %} <link rel="stylesheet" href="{% static '/css/homestyle.css' %}" /> {% endcomment %}
-{%endblock header%} {% block content %}
+{% extends 'base.html' %}
+{% load static %}
 
+{% block title %}Dashboard - Asset Management{% endblock %}
 
-
-<!-- product grid -->
-<button type="button" class="hs-collapse-toggle w-full py-3 px-4 inline-flex justify-center items-center gap-2 rounded-lg border border-transparent font-semibold bg-white text-slate-800  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all text-sm dark:bg-slate-900 dark:text-white dark:focus:ring-offset-gray-800" id="hs-basic-collapse" data-hs-collapse="#hs-basic-collapse-heading">
-  View Computers
-  <svg class="hs-collapse-open:rotate-180 w-2.5 h-2.5 text-slate-800 dark:text-white" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M2 5L8.16086 10.6869C8.35239 10.8637 8.64761 10.8637 8.83914 10.6869L15 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-  </svg>
-</button>
-<div id="hs-basic-collapse-heading" class="hs-collapse active w-full overflow-hidden transition-[height] duration-300" aria-labelledby="hs-basic-collapse">
-  <div class="container mx-auto">
-    <h1 class="font-poppins text-center text-3xl font-bold pt-10">
-      Filter Computers
-    </h1>
+{% block content %}
+<!-- Page Header -->
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Dashboard</h1>
+    <p class="text-gray-500 text-sm">Manage and track your IT assets</p>
   </div>
-  
-  <!-- form -->
-  <form class="text-center py-4">
-    <input
-      type="text"
-      class="placeholder-gray-800 focus:outline-none bg-gray-200 text-gray-800 w-2/4 py-2 px-3 font-poppins rounded-md"
-      id="filterInput"
-      placeholder="Filter by Asset tag / Service tag / Computer Name / User "
-    />
-  </form>
-<div
-  class="products grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3  pt-12 gap-10 " >
-  {% for item in computer_items %}
-  <div class="rounded shadow p-2 bg-white cardd ">
-    <div class="item justify-self-center ">
-      
-      {% comment %} <img src="./assets/img3.png" class="bg-cover img" alt="img1" />  {% endcomment %}
-      <div class="text-center py-3 font-poppins">
-        <div class="flex justify-center ">
-          <svg  class="w-5 mr-3 " xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M24 32C10.7 32 0 42.7 0 56V456c0 13.3 10.7 24 24 24H40c13.3 0 24-10.7 24-24V56c0-13.3-10.7-24-24-24H24zm88 0c-8.8 0-16 7.2-16 16V464c0 8.8 7.2 16 16 16s16-7.2 16-16V48c0-8.8-7.2-16-16-16zm72 0c-13.3 0-24 10.7-24 24V456c0 13.3 10.7 24 24 24h16c13.3 0 24-10.7 24-24V56c0-13.3-10.7-24-24-24H184zm96 0c-13.3 0-24 10.7-24 24V456c0 13.3 10.7 24 24 24h16c13.3 0 24-10.7 24-24V56c0-13.3-10.7-24-24-24H280zM448 56V456c0 13.3 10.7 24 24 24h16c13.3 0 24-10.7 24-24V56c0-13.3-10.7-24-24-24H472c-13.3 0-24 10.7-24 24zm-64-8V464c0 8.8 7.2 16 16 16s16-7.2 16-16V48c0-8.8-7.2-16-16-16s-16 7.2-16 16z"/></svg>
-          <h1 class="text-lg font-extrabold title ">
-          
-          {{item.asset_tag}}  
-        </h1>
-      </div>
-      
-      <div class="flex justify-center ">
-      <svg class="w-5 mr-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M0 80V229.5c0 17 6.7 33.3 18.7 45.3l176 176c25 25 65.5 25 90.5 0L418.7 317.3c25-25 25-65.5 0-90.5l-176-176c-12-12-28.3-18.7-45.3-18.7H48C21.5 32 0 53.5 0 80zm112 32a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg>
-        <h1  class="text-lg mr-4 font-bold servicetag">{{item.service_tag}}</h1>
-     
-        
-        <svg class="w-6  mr-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><path d="M128 32C92.7 32 64 60.7 64 96V352h64V96H512V352h64V96c0-35.3-28.7-64-64-64H128zM19.2 384C8.6 384 0 392.6 0 403.2C0 445.6 34.4 480 76.8 480H563.2c42.4 0 76.8-34.4 76.8-76.8c0-10.6-8.6-19.2-19.2-19.2H19.2z"/></svg>
-        <h1 class="text-lg font-bold computername1">{{item.computer_name}}</h1>
-      </div>
-      
-          
-        <div class="flex justify-center ">
-        
-          <svg class="w-5 mr-3"  xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M224 256A128 128 0 1 0 224 0a128 128 0 1 0 0 256zm-45.7 48C79.8 304 0 383.8 0 482.3C0 498.7 13.3 512 29.7 512H418.3c16.4 0 29.7-13.3 29.7-29.7C448 383.8 368.2 304 269.7 304H178.3z"/></svg>
-          <h1  class="text-md font-semibold mr-4 user">{{item.user}} </h1>
-          
-          
-          <svg  class="w-5 mr-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path d="M48 0C21.5 0 0 21.5 0 48V464c0 26.5 21.5 48 48 48h96V432c0-26.5 21.5-48 48-48s48 21.5 48 48v80h96c26.5 0 48-21.5 48-48V48c0-26.5-21.5-48-48-48H48zM64 240c0-8.8 7.2-16 16-16h32c8.8 0 16 7.2 16 16v32c0 8.8-7.2 16-16 16H80c-8.8 0-16-7.2-16-16V240zm112-16h32c8.8 0 16 7.2 16 16v32c0 8.8-7.2 16-16 16H176c-8.8 0-16-7.2-16-16V240c0-8.8 7.2-16 16-16zm80 16c0-8.8 7.2-16 16-16h32c8.8 0 16 7.2 16 16v32c0 8.8-7.2 16-16 16H272c-8.8 0-16-7.2-16-16V240zM80 96h32c8.8 0 16 7.2 16 16v32c0 8.8-7.2 16-16 16H80c-8.8 0-16-7.2-16-16V112c0-8.8 7.2-16 16-16zm80 16c0-8.8 7.2-16 16-16h32c8.8 0 16 7.2 16 16v32c0 8.8-7.2 16-16 16H176c-8.8 0-16-7.2-16-16V112zM272 96h32c8.8 0 16 7.2 16 16v32c0 8.8-7.2 16-16 16H272c-8.8 0-16-7.2-16-16V112c0-8.8 7.2-16 16-16z"/></svg>
-          <h1  class="text-md font-semibold department">{{item.department}}</h1>
-        
-      </div>
-      <span class="block py-3"> <span class="text-md">Storage: {{item.storage}} - RAM: {{item.ram}} - CPU: {{item.cpu}}</span></span>
+  <div class="page-actions">
+    <a href="{% url 'index' %}" class="btn btn-primary">
+      <i class="bi bi-upc-scan"></i>
+      Scan Asset
+    </a>
+  </div>
+</div>
 
-        <span class="block py-3"><span class="text-md modelmake"> Make: {{item.make}} - Model: {{item.model}}</span></span>
-        {% if item.printers.all %} {% for printer in item.printers.all %}
-        <a href="{% url 'printers_page' printer.id %}" class="block"><button class="border-2 text-xxs font-semibold px-3 py-1 bg-blue-400 rounded-md">
-            {{printer.description}}
-          </button></a>
-        {% endfor %} {% endif %}
-        {% if item.docking_stations.all %} {% for dockingstation in item.docking_stations.all %}
-        <a href="{% url 'dockingstation_page' dockingstation.id %}" class="block"><button class="border-2 bg-green-400 text-xxs font-semibold px-3 py-1  rounded-md">
-            {{dockingstation}}
-          </button></a>
-        {% endfor %} {% endif %}
-        {% if item.monitors.all %} {% for monitor in item.monitors.all %}
-        <a href="{% url 'monitors_page' monitor.id %}" class="block"> <button class="border-2 bg-violet-400 text-xxs font-semibold px-3 py-1 rounded-md">
-            {{monitor}}
-          </button></a>
-        {% endfor %} {% endif %}
-        <a href="{% url 'computers_form' item.id %}" class="block"
-          ><button class="border-2 px-8 py-1 bg-yellow-400 border rounded-md">
-            view
-          </button></a
-        >
-      </div>
+<!-- Stats Grid -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-icon primary">
+      <i class="bi bi-laptop"></i>
+    </div>
+    <div class="stat-value">{{ computer_items|length }}</div>
+    <div class="stat-label">Computers</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon success">
+      <i class="bi bi-display"></i>
+    </div>
+    <div class="stat-value" id="monitor-count">-</div>
+    <div class="stat-label">Monitors</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon warning">
+      <i class="bi bi-printer"></i>
+    </div>
+    <div class="stat-value" id="printer-count">-</div>
+    <div class="stat-label">Printers</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon info">
+      <i class="bi bi-hdd-network"></i>
+    </div>
+    <div class="stat-value" id="dock-count">-</div>
+    <div class="stat-label">Docking Stations</div>
+  </div>
+</div>
+
+<!-- Filter Section -->
+<div class="filter-section">
+  <div class="filter-toggle" onclick="toggleFilter()">
+    <div style="display: flex; align-items: center; gap: var(--space-3);">
+      <i class="bi bi-funnel"></i>
+      <h3>Filter Computers</h3>
+    </div>
+    <i class="bi bi-chevron-down" id="filterArrow" style="transition: transform 0.3s;"></i>
+  </div>
+  <div class="filter-content open" id="filterContent">
+    <div class="search-container" style="max-width: 100%;">
+      <i class="bi bi-search search-icon"></i>
+      <input
+        type="text"
+        class="search-input"
+        id="filterInput"
+        placeholder="Search by asset tag, service tag, name, user, make, model..."
+        style="padding-left: 2.5rem;"
+      />
     </div>
   </div>
-  {%endfor%}
 </div>
+
+<!-- Quick Actions (Mobile) -->
+<div class="hide-desktop mb-6">
+  <h3 class="mb-4">Quick Actions</h3>
+  <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-3);">
+    <a href="{% url 'index' %}" class="btn btn-secondary" style="flex-direction: column; padding: var(--space-4);">
+      <i class="bi bi-laptop" style="font-size: 1.25rem; margin-bottom: var(--space-1);"></i>
+      <span style="font-size: 0.75rem;">Scan Computer</span>
+    </a>
+    <a href="{% url 'scan_monitor' %}" class="btn btn-secondary" style="flex-direction: column; padding: var(--space-4);">
+      <i class="bi bi-display" style="font-size: 1.25rem; margin-bottom: var(--space-1);"></i>
+      <span style="font-size: 0.75rem;">Scan Monitor</span>
+    </a>
+  </div>
 </div>
-<script src="{% static '/js/homefilter.js' %}"></script>
-{%endblock content%}
+
+<!-- Asset Grid -->
+<div class="asset-grid" id="assetGrid">
+  {% for item in computer_items %}
+  <div class="asset-card cardd fade-in" style="animation-delay: {{ forloop.counter0|divisibleby:10 }}ms;">
+    <a href="{% url 'computers_form' item.id %}" style="text-decoration: none; color: inherit;">
+      <div class="asset-card-header">
+        <div class="asset-card-tag">
+          <i class="bi bi-upc"></i> {{ item.asset_tag }}
+        </div>
+        <div class="asset-card-title servicetag">{{ item.service_tag|default:"No Service Tag" }}</div>
+      </div>
+      <div class="asset-card-body">
+        <div class="asset-card-row">
+          <i class="bi bi-pc-display"></i>
+          <span class="asset-card-label">Name</span>
+          <span class="asset-card-value computername1">{{ item.computer_name|default:"Not Set" }}</span>
+        </div>
+        <div class="asset-card-row">
+          <i class="bi bi-person"></i>
+          <span class="asset-card-label">User</span>
+          <span class="asset-card-value user">{{ item.user|default:"Unassigned" }}</span>
+        </div>
+        <div class="asset-card-row">
+          <i class="bi bi-building"></i>
+          <span class="asset-card-label">Dept</span>
+          <span class="asset-card-value department">{{ item.department|default:"N/A" }}</span>
+        </div>
+        <div class="asset-card-row">
+          <i class="bi bi-cpu"></i>
+          <span class="asset-card-label">Specs</span>
+          <span class="asset-card-value modelmake" style="font-size: 0.75rem;">{{ item.make }} {{ item.model }}</span>
+        </div>
+        <div style="display: flex; gap: var(--space-2); flex-wrap: wrap; margin-top: var(--space-2); font-size: 0.7rem; color: var(--gray-500);">
+          {% if item.storage %}<span><i class="bi bi-device-hdd"></i> {{ item.storage }}</span>{% endif %}
+          {% if item.ram %}<span><i class="bi bi-memory"></i> {{ item.ram }}</span>{% endif %}
+          {% if item.cpu %}<span><i class="bi bi-cpu"></i> {{ item.cpu }}</span>{% endif %}
+        </div>
+      </div>
+    </a>
+    <div class="asset-card-footer">
+      {% if item.printers.all %}
+        {% for printer in item.printers.all %}
+          <a href="{% url 'printers_page' printer.id %}" class="tag tag-info">
+            <i class="bi bi-printer"></i> {{ printer.description|truncatechars:15 }}
+          </a>
+        {% endfor %}
+      {% endif %}
+      {% if item.docking_stations.all %}
+        {% for dockingstation in item.docking_stations.all %}
+          <a href="{% url 'dockingstation_page' dockingstation.id %}" class="tag tag-success">
+            <i class="bi bi-hdd-network"></i> Dock
+          </a>
+        {% endfor %}
+      {% endif %}
+      {% if item.monitors.all %}
+        {% for monitor in item.monitors.all %}
+          <a href="{% url 'monitors_page' monitor.id %}" class="tag tag-primary">
+            <i class="bi bi-display"></i> Monitor
+          </a>
+        {% endfor %}
+      {% endif %}
+      {% if not item.printers.all and not item.docking_stations.all and not item.monitors.all %}
+        <span class="tag" style="background: var(--gray-100); color: var(--gray-500);">
+          <i class="bi bi-dash"></i> No peripherals
+        </span>
+      {% endif %}
+    </div>
+  </div>
+  {% empty %}
+  <div class="empty-state" style="grid-column: 1 / -1;">
+    <div class="empty-state-icon">
+      <i class="bi bi-inbox"></i>
+    </div>
+    <h3 class="empty-state-title">No Computers Found</h3>
+    <p class="empty-state-text">Get started by scanning or adding your first computer asset.</p>
+    <a href="{% url 'index' %}" class="btn btn-primary">
+      <i class="bi bi-plus-lg"></i>
+      Add Computer
+    </a>
+  </div>
+  {% endfor %}
+</div>
+
+<script>
+// Filter functionality
+const filterInput = document.getElementById('filterInput');
+const assetGrid = document.getElementById('assetGrid');
+const cards = document.querySelectorAll('.cardd');
+
+filterInput.addEventListener('input', function() {
+  const searchTerm = this.value.toLowerCase();
+
+  cards.forEach(card => {
+    const text = card.textContent.toLowerCase();
+    if (text.includes(searchTerm)) {
+      card.style.display = '';
+    } else {
+      card.style.display = 'none';
+    }
+  });
+});
+
+// Toggle filter section
+function toggleFilter() {
+  const filterContent = document.getElementById('filterContent');
+  const filterArrow = document.getElementById('filterArrow');
+  filterContent.classList.toggle('open');
+  filterArrow.style.transform = filterContent.classList.contains('open') ? 'rotate(0)' : 'rotate(-90deg)';
+}
+
+// Calculate counts from data
+let monitorCount = 0;
+let printerCount = 0;
+let dockCount = 0;
+
+cards.forEach(card => {
+  const monitors = card.querySelectorAll('.tag-primary').length;
+  const printers = card.querySelectorAll('.tag-info').length;
+  const docks = card.querySelectorAll('.tag-success').length;
+  monitorCount += monitors;
+  printerCount += printers;
+  dockCount += docks;
+});
+
+document.getElementById('monitor-count').textContent = monitorCount || '-';
+document.getElementById('printer-count').textContent = printerCount || '-';
+document.getElementById('dock-count').textContent = dockCount || '-';
+</script>
+{% endblock content %}

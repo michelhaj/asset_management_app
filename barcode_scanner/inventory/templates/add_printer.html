@@ -1,26 +1,58 @@
 {% extends 'base.html' %}
-{%load widget_tweaks%}
+{% load widget_tweaks %}
+
+{% block title %}Add Printer - Asset Management{% endblock %}
+
 {% block content %}
-<div>
-<div class="bg-gray-200 rounded-lg m-5 w-full">
-  <h2 class="m-5 pt-5 font-bold text-xl"> Add Printer</h2>
-  
-  <form class="m-5" method="post">
-    {% csrf_token %}
-    
-    <div class="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3 ">
-    {% for item in form %}
-  
-    <div class="flex-col justify-center font-semibold">
-      <div>{%render_field item.label %}</div>
-      
-      <div>{%render_field item class+="form-input border-orange-500 border-2"%}</div>
-      </div>
-    {%endfor%}
+<div class="page-header">
+  <div>
+    <nav style="font-size: 0.875rem; color: var(--gray-500); margin-bottom: var(--space-2);">
+      <a href="{% url 'home' %}" style="color: var(--primary); text-decoration: none;">Dashboard</a>
+      <i class="bi bi-chevron-right" style="margin: 0 8px;"></i>
+      <a href="{% url 'printers_list' %}" style="color: var(--primary); text-decoration: none;">Printers</a>
+      <i class="bi bi-chevron-right" style="margin: 0 8px;"></i>
+      <span>New Printer</span>
+    </nav>
+    <h1 class="page-title">Add New Printer</h1>
   </div>
-   <div class="mt-10 pb-10"><span class="orang-btn" ><button   type="submit"> Save </button></span></div>
-  </form>
-</div>
 </div>
 
+<div class="card">
+  <div class="card-header">
+    <div style="display: flex; align-items: center; gap: var(--space-3);">
+      <div style="width: 40px; height: 40px; border-radius: var(--radius); background: linear-gradient(135deg, var(--info), #0284c7); display: flex; align-items: center; justify-content: center; color: white;">
+        <i class="bi bi-printer"></i>
+      </div>
+      <h3 class="card-title">Printer Details</h3>
+    </div>
+  </div>
+
+  <form method="post">
+    {% csrf_token %}
+    <div class="card-body">
+      <div style="display: grid; grid-template-columns: repeat(1, 1fr); gap: var(--space-4);">
+        {% for item in form %}
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label">{{ item.label }}</label>
+          {% render_field item class="form-input" placeholder=item.label %}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="card-footer" style="display: flex; flex-wrap: wrap; gap: var(--space-3); justify-content: space-between;">
+      <a href="{% url 'printers_list' %}" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Back
+      </a>
+      <button type="submit" class="btn btn-primary">
+        <i class="bi bi-check-lg"></i> Add Printer
+      </button>
+    </div>
+  </form>
+</div>
+
+<style>
+  @media (min-width: 768px) {
+    .card-body > div { grid-template-columns: repeat(2, 1fr) !important; }
+  }
+</style>
 {% endblock %}
