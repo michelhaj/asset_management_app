@@ -6,40 +6,78 @@ from .models import (
 )
 
 
+# =============================================================================
+# Inline Admin Classes for Related Models
+# =============================================================================
+
+class MonitorsInline(admin.TabularInline):
+    """Inline admin for monitors related to a computer."""
+    model = monitors
+    extra = 0
+    fields = ['id', 'asset_tag', 'service_tag', 'make']
+    readonly_fields = ['id']
+    show_change_link = True
+
+
+class DockingStationsInline(admin.TabularInline):
+    """Inline admin for docking stations related to a computer."""
+    model = docking_stations
+    extra = 0
+    fields = ['id', 'asset_tag', 'service_tag', 'make']
+    readonly_fields = ['id']
+    show_change_link = True
+
+
+# =============================================================================
+# ModelAdmin Classes
+# =============================================================================
+
 @admin.register(Computers)
 class ComputersAdmin(admin.ModelAdmin):
-    """Admin interface for Computers"""
+    """Enhanced admin for Computers model with Jazzmin UI."""
+
     list_display = [
         'id', 'asset_tag', 'service_tag', 'computer_name',
-        'department', 'user', 'make', 'model', 'status_badge', 'warranty_status'
+        'department', 'user', 'make', 'model', 'status_badge', 'warranty_status',
+        'get_monitors_count', 'get_docking_stations_count',
     ]
+
     list_filter = ['status', 'department', 'make', 'created_at']
     search_fields = ['asset_tag', 'service_tag', 'computer_name', 'user', 'make', 'model']
     readonly_fields = ['id', 'created_at', 'updated_at']
     ordering = ['-created_at']
+    list_per_page = 25
+    list_max_show_all = 100
+    filter_horizontal = ['printers']
 
     fieldsets = (
-        ('Basic Information', {
-            'fields': ('id', 'asset_tag', 'service_tag', 'computer_name')
+        ('Identification', {
+            'fields': ('id', 'asset_tag', 'service_tag', 'computer_name'),
+            'classes': ('wide',),
         }),
         ('Assignment', {
-            'fields': ('department', 'user', 'location')
+            'fields': ('department', 'user', 'location'),
+            'classes': ('wide',),
         }),
-        ('Hardware Details', {
-            'fields': ('make', 'model', 'storage', 'cpu', 'ram', 'printers')
+        ('Hardware Specifications', {
+            'fields': ('make', 'model', 'storage', 'cpu', 'ram', 'printers'),
+            'classes': ('wide', 'collapse'),
         }),
         ('Lifecycle', {
-            'fields': ('status', 'purchase_date', 'warranty_expiry', 'purchase_cost')
+            'fields': ('status', 'purchase_date', 'warranty_expiry', 'purchase_cost'),
+            'classes': ('wide',),
         }),
         ('Notes', {
             'fields': ('notes',),
-            'classes': ('collapse',)
+            'classes': ('collapse',),
         }),
         ('Timestamps', {
             'fields': ('created_at', 'updated_at'),
-            'classes': ('collapse',)
+            'classes': ('collapse',),
         }),
     )
+
+    inlines = [MonitorsInline, DockingStationsInline]
 
     def status_badge(self, obj):
         colors = {
@@ -69,37 +107,144 @@ class ComputersAdmin(admin.ModelAdmin):
         return format_html('<span style="color: green;">{} days left</span>', days_left)
     warranty_status.short_description = 'Warranty'
 
+    def get_monitors_count(self, obj):
+        """Get count of monitors connected to this computer."""
+        count = obj.monitors.count()
+        if count > 0:
+            return format_html('<span style="color: green; font-weight: bold;">{}</span>', count)
+        return format_html('<span style="color: gray;">0</span>')
+    get_monitors_count.short_description = 'Monitors'
+
+    def get_docking_stations_count(self, obj):
+        """Get count of docking stations connected to this computer."""
+        count = obj.docking_stations.count()
+        if count > 0:
+            return format_html('<span style="color: green; font-weight: bold;">{}</span>', count)
+        return format_html('<span style="color: gray;">0</span>')
+    get_docking_stations_count.short_description = 'Docking'
+
 
 @admin.register(printers)
 class PrintersAdmin(admin.ModelAdmin):
-    """Admin interface for Printers"""
-    list_display = ['id', 'service_tag', 'make', 'description', 'status', 'location']
+    """Enhanced admin for Printers model."""
+
+    list_display = ['id', 'service_tag', 'make', 'description', 'status', 'location', 'get_computers_count']
     list_filter = ['status', 'make', 'created_at']
-    search_fields = ['service_tag', 'make', 'description']
+    search_fields = ['id', 'service_tag', 'make', 'description']
     readonly_fields = ['id', 'created_at', 'updated_at']
     ordering = ['-created_at']
+    list_per_page = 25
+
+    fieldsets = (
+        ('Identification', {
+            'fields': ('id', 'service_tag'),
+            'classes': ('wide',),
+        }),
+        ('Details', {
+            'fields': ('make', 'description', 'status', 'location'),
+            'classes': ('wide',),
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',),
+        }),
+    )
+
+    def get_computers_count(self, obj):
+        """Get count of computers using this printer."""
+        count = obj.computers.count()
+        if count > 0:
+            return format_html('<span style="color: blue; font-weight: bold;">{}</span>', count)
+        return format_html('<span style="color: gray;">0</span>')
+    get_computers_count.short_description = 'Computers'
 
 
 @admin.register(monitors)
 class MonitorsAdmin(admin.ModelAdmin):
-    """Admin interface for Monitors"""
-    list_display = ['id', 'asset_tag', 'service_tag', 'make', 'computer', 'status']
+    """Enhanced admin for Monitors model."""
+
+    list_display = ['id', 'asset_tag', 'service_tag', 'make', 'computer_link', 'status']
     list_filter = ['status', 'make', 'created_at']
-    search_fields = ['asset_tag', 'service_tag', 'make']
+    search_fields = ['id', 'asset_tag', 'service_tag', 'make', 'computer__asset_tag', 'computer__computer_name']
     readonly_fields = ['id', 'created_at', 'updated_at']
     ordering = ['-created_at']
+    list_per_page = 25
     autocomplete_fields = ['computer']
+
+    fieldsets = (
+        ('Identification', {
+            'fields': ('id', 'asset_tag', 'service_tag'),
+            'classes': ('wide',),
+        }),
+        ('Details', {
+            'fields': ('make', 'status'),
+            'classes': ('wide',),
+        }),
+        ('Assignment', {
+            'fields': ('computer',),
+            'classes': ('wide',),
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',),
+        }),
+    )
+
+    def computer_link(self, obj):
+        """Display computer as a clickable link."""
+        if obj.computer:
+            return format_html(
+                '<a href="/admin/inventory/computers/{}/change/">{}</a>',
+                obj.computer.id,
+                obj.computer.asset_tag or obj.computer.id
+            )
+        return format_html('<span style="color: gray;">Not Assigned</span>')
+    computer_link.short_description = 'Computer'
+    computer_link.admin_order_field = 'computer__asset_tag'
 
 
 @admin.register(docking_stations)
 class DockingStationsAdmin(admin.ModelAdmin):
-    """Admin interface for Docking Stations"""
-    list_display = ['id', 'asset_tag', 'service_tag', 'make', 'computer', 'status']
+    """Enhanced admin for Docking Stations model."""
+
+    list_display = ['id', 'asset_tag', 'service_tag', 'make', 'computer_link', 'status']
     list_filter = ['status', 'make', 'created_at']
-    search_fields = ['asset_tag', 'service_tag', 'make']
+    search_fields = ['id', 'asset_tag', 'service_tag', 'make', 'computer__asset_tag', 'computer__computer_name']
     readonly_fields = ['id', 'created_at', 'updated_at']
     ordering = ['-created_at']
+    list_per_page = 25
     autocomplete_fields = ['computer']
+
+    fieldsets = (
+        ('Identification', {
+            'fields': ('id', 'asset_tag', 'service_tag'),
+            'classes': ('wide',),
+        }),
+        ('Details', {
+            'fields': ('make', 'status'),
+            'classes': ('wide',),
+        }),
+        ('Assignment', {
+            'fields': ('computer',),
+            'classes': ('wide',),
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',),
+        }),
+    )
+
+    def computer_link(self, obj):
+        """Display computer as a clickable link."""
+        if obj.computer:
+            return format_html(
+                '<a href="/admin/inventory/computers/{}/change/">{}</a>',
+                obj.computer.id,
+                obj.computer.asset_tag or obj.computer.id
+            )
+        return format_html('<span style="color: gray;">Not Assigned</span>')
+    computer_link.short_description = 'Computer'
+    computer_link.admin_order_field = 'computer__asset_tag'
 
 
 @admin.register(AssetHistory)
@@ -164,7 +309,10 @@ class NotificationSettingAdmin(admin.ModelAdmin):
     search_fields = ['user__username', 'user__email']
 
 
-# Customize admin site
-admin.site.site_header = 'Asset Management System'
-admin.site.site_title = 'Asset Management'
-admin.site.index_title = 'Administration Dashboard'
+# =============================================================================
+# Admin Site Customization
+# =============================================================================
+
+admin.site.site_header = "Asset Management System"
+admin.site.site_title = "Asset Management"
+admin.site.index_title = "Welcome to Asset Management Dashboard"

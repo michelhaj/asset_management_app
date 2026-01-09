@@ -13,6 +13,7 @@ whitenoise==6.4.0
 # Django extensions
 django-browser-reload==1.8.0
 django-extensions==3.2.1
+django-jazzmin==3.0.0
 django-widget-tweaks==1.4.12
 
 # REST API
