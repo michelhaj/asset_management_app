@@ -13,6 +13,10 @@ from django.contrib.admin.views.decorators import user_passes_test
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Q, Count
 from django.db.models.functions import TruncMonth
+from django.db import IntegrityError, transaction
+import logging
+
+logger = logging.getLogger(__name__)
 from django.utils import timezone
 
 from .models import (
@@ -245,19 +249,36 @@ def save_barcode(request):
     if request.method == 'POST':
         barcode_data = request.POST.get('barcode_data', None)
         if barcode_data:
-            computer, created = Computers.objects.get_or_create(asset_tag=barcode_data)
-            if created:
-                return JsonResponse({
-                    'status': 'success',
-                    'message': 'Barcode saved successfully',
-                    'new_item': True
-                })
-            else:
-                return JsonResponse({
-                    'status': 'success',
-                    'message': 'Barcode already exists',
-                    'existing_item': True
-                })
+            try:
+                with transaction.atomic():
+                    computer, created = Computers.objects.get_or_create(asset_tag=barcode_data)
+                if created:
+                    return JsonResponse({
+                        'status': 'success',
+                        'message': 'Barcode saved successfully',
+                        'new_item': True
+                    })
+                else:
+                    return JsonResponse({
+                        'status': 'success',
+                        'message': 'Barcode already exists',
+                        'existing_item': True
+                    })
+            except IntegrityError as e:
+                logger.error(f"IntegrityError saving barcode {barcode_data}: {e}")
+                # Try to fetch existing record if it was created by a race condition
+                try:
+                    computer = Computers.objects.get(asset_tag=barcode_data)
+                    return JsonResponse({
+                        'status': 'success',
+                        'message': 'Barcode already exists',
+                        'existing_item': True
+                    })
+                except Computers.DoesNotExist:
+                    return JsonResponse({'status': 'error', 'message': 'Database error saving barcode'}, status=500)
+            except Exception as e:
+                logger.error(f"Error saving barcode {barcode_data}: {e}")
+                return JsonResponse({'status': 'error', 'message': 'Error processing barcode'}, status=500)
         else:
             return JsonResponse({'status': 'error', 'message': 'No barcode data received'})
     return JsonResponse({'status': 'error', 'message': 'Invalid request'})
@@ -451,19 +472,36 @@ def save_barcode_monitor(request):
     if request.method == 'POST':
         barcode_data = request.POST.get('barcode_data', None)
         if barcode_data:
-            monitor, created = monitors.objects.get_or_create(asset_tag=barcode_data)
-            if created:
-                return JsonResponse({
-                    'status': 'success',
-                    'message': 'Barcode saved successfully',
-                    'new_item': True
-                })
-            else:
-                return JsonResponse({
-                    'status': 'success',
-                    'message': 'Barcode already exists',
-                    'existing_item': True
-                })
+            try:
+                with transaction.atomic():
+                    monitor, created = monitors.objects.get_or_create(asset_tag=barcode_data)
+                if created:
+                    return JsonResponse({
+                        'status': 'success',
+                        'message': 'Barcode saved successfully',
+                        'new_item': True
+                    })
+                else:
+                    return JsonResponse({
+                        'status': 'success',
+                        'message': 'Barcode already exists',
+                        'existing_item': True
+                    })
+            except IntegrityError as e:
+                logger.error(f"IntegrityError saving monitor barcode {barcode_data}: {e}")
+                # Try to fetch existing record if it was created by a race condition
+                try:
+                    monitor = monitors.objects.get(asset_tag=barcode_data)
+                    return JsonResponse({
+                        'status': 'success',
+                        'message': 'Barcode already exists',
+                        'existing_item': True
+                    })
+                except monitors.DoesNotExist:
+                    return JsonResponse({'status': 'error', 'message': 'Database error saving barcode'}, status=500)
+            except Exception as e:
+                logger.error(f"Error saving monitor barcode {barcode_data}: {e}")
+                return JsonResponse({'status': 'error', 'message': 'Error processing barcode'}, status=500)
         else:
             return JsonResponse({'status': 'error', 'message': 'No barcode data received'})
     return JsonResponse({'status': 'error', 'message': 'Invalid request'})
@@ -580,19 +618,36 @@ def save_barcode_dockingstation(request):
     if request.method == 'POST':
         barcode_data = request.POST.get('barcode_data', None)
         if barcode_data:
-            dockingstation, created = docking_stations.objects.get_or_create(asset_tag=barcode_data)
-            if created:
-                return JsonResponse({
-                    'status': 'success',
-                    'message': 'Barcode saved successfully',
-                    'new_item': True
-                })
-            else:
-                return JsonResponse({
-                    'status': 'success',
-                    'message': 'Barcode already exists',
-                    'existing_item': True
-                })
+            try:
+                with transaction.atomic():
+                    dockingstation, created = docking_stations.objects.get_or_create(asset_tag=barcode_data)
+                if created:
+                    return JsonResponse({
+                        'status': 'success',
+                        'message': 'Barcode saved successfully',
+                        'new_item': True
+                    })
+                else:
+                    return JsonResponse({
+                        'status': 'success',
+                        'message': 'Barcode already exists',
+                        'existing_item': True
+                    })
+            except IntegrityError as e:
+                logger.error(f"IntegrityError saving docking station barcode {barcode_data}: {e}")
+                # Try to fetch existing record if it was created by a race condition
+                try:
+                    dockingstation = docking_stations.objects.get(asset_tag=barcode_data)
+                    return JsonResponse({
+                        'status': 'success',
+                        'message': 'Barcode already exists',
+                        'existing_item': True
+                    })
+                except docking_stations.DoesNotExist:
+                    return JsonResponse({'status': 'error', 'message': 'Database error saving barcode'}, status=500)
+            except Exception as e:
+                logger.error(f"Error saving docking station barcode {barcode_data}: {e}")
+                return JsonResponse({'status': 'error', 'message': 'Error processing barcode'}, status=500)
         else:
             return JsonResponse({'status': 'error', 'message': 'No barcode data received'})
     return JsonResponse({'status': 'error', 'message': 'Invalid request'})

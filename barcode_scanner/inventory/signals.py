@@ -33,56 +33,48 @@ def get_current_ip():
 
 # ==================== ID Generation Signals ====================
 
+def get_max_id_number(model, prefix):
+    """
+    Extract the maximum numeric ID from a model's records.
+    Handles IDs like 'prefix-1', 'prefix-10', etc. correctly using numeric comparison.
+    """
+    max_num = 0
+    for item in model.objects.filter(id__startswith=f"{prefix}-").values_list('id', flat=True):
+        try:
+            num = int(item.split('-')[1])
+            if num > max_num:
+                max_num = num
+        except (ValueError, IndexError):
+            continue
+    return max_num
+
+
 @receiver(pre_save, sender=Computers)
 def generate_computer_id(sender, instance, **kwargs):
     if not instance.id:
-        last_item = Computers.objects.order_by('-id').first()
-        if last_item and '-' in last_item.id:
-            try:
-                instance.id = f"computer-{int(last_item.id.split('-')[1]) + 1}"
-            except (ValueError, IndexError):
-                instance.id = "computer-1"
-        else:
-            instance.id = "computer-1"
+        max_num = get_max_id_number(Computers, "computer")
+        instance.id = f"computer-{max_num + 1}"
 
 
 @receiver(pre_save, sender=printers)
 def generate_printer_id(sender, instance, **kwargs):
     if not instance.id:
-        last_item = printers.objects.order_by('-id').first()
-        if last_item and '-' in last_item.id:
-            try:
-                instance.id = f"printer-{int(last_item.id.split('-')[1]) + 1}"
-            except (ValueError, IndexError):
-                instance.id = "printer-1"
-        else:
-            instance.id = "printer-1"
+        max_num = get_max_id_number(printers, "printer")
+        instance.id = f"printer-{max_num + 1}"
 
 
 @receiver(pre_save, sender=monitors)
 def generate_monitor_id(sender, instance, **kwargs):
     if not instance.id:
-        last_item = monitors.objects.order_by('-id').first()
-        if last_item and '-' in last_item.id:
-            try:
-                instance.id = f"monitor-{int(last_item.id.split('-')[1]) + 1}"
-            except (ValueError, IndexError):
-                instance.id = "monitor-1"
-        else:
-            instance.id = "monitor-1"
+        max_num = get_max_id_number(monitors, "monitor")
+        instance.id = f"monitor-{max_num + 1}"
 
 
 @receiver(pre_save, sender=docking_stations)
 def generate_docking_station_id(sender, instance, **kwargs):
     if not instance.id:
-        last_item = docking_stations.objects.order_by('-id').first()
-        if last_item and '-' in last_item.id:
-            try:
-                instance.id = f"docking_station-{int(last_item.id.split('-')[1]) + 1}"
-            except (ValueError, IndexError):
-                instance.id = "docking_station-1"
-        else:
-            instance.id = "docking_station-1"
+        max_num = get_max_id_number(docking_stations, "docking_station")
+        instance.id = f"docking_station-{max_num + 1}"
 
 
 # ==================== Audit Trail Signals ====================
